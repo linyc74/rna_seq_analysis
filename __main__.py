@@ -1,4 +1,5 @@
 import argparse
+import rna_seq_analysis
 
 
 __VERSION__ = '1.0.0-beta'
@@ -43,7 +44,7 @@ OPTIONAL = [
         }
     },
     {
-        'keys': ['--group-column'],
+        'keys': ['--sample-group-column'],
         'properties': {
             'type': str,
             'required': False,
@@ -124,6 +125,16 @@ class EntryPoint:
     def run(self):
         args = self.parser.parse_args()
         print(f'Start running RNA-seq Analysis version {__VERSION__}\n', flush=True)
+        rna_seq_analysis.Main().main(
+            count_table=args.count_table,
+            sample_info_table=args.sample_info_table,
+            gene_info_table=args.gene_info_table,
+            gene_length_column=args.gene_length_column,
+            sample_group_column=args.gene_length_column,
+            threads=args.threads,
+            debug=args.debug,
+            outdir=args.outdir
+        )
 
 
 if __name__ == '__main__':

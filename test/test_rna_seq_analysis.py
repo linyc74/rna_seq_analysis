@@ -15,5 +15,6 @@ class TestRNASeqAnalysis(TestCase):
             count_table=f'{self.indir}/count-table.csv',
             sample_info_table=f'{self.indir}/sample-info-table.csv',
             gene_info_table=f'{self.indir}/gene-info-table.csv',
-            gene_length_column='Gene Length'
+            gene_length_column='Gene Length',
+            sample_group_column='Group'
         )

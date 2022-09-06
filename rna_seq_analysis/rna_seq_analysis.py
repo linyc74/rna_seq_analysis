@@ -9,6 +9,7 @@ class RNASeqAnalysis(Processor):
     sample_info_table: str
     gene_info_table: str
     gene_length_column: str
+    sample_group_column: str
 
     count_df: pd.DataFrame
     sample_info_df: pd.DataFrame
@@ -21,12 +22,14 @@ class RNASeqAnalysis(Processor):
             count_table: str,
             sample_info_table: str,
             gene_info_table: str,
-            gene_length_column: str):
+            gene_length_column: str,
+            sample_group_column: str):
 
         self.count_table = count_table
         self.sample_info_table = sample_info_table
         self.gene_info_table = gene_info_table
         self.gene_length_column = gene_length_column
+        self.sample_group_column = sample_group_column
 
         self.read_tables()
         self.tpm()
