@@ -1,7 +1,6 @@
 import pandas as pd
-
-from .setup import TestCase
 from rna_seq_analysis.tpm import TPM
+from .setup import TestCase
 
 
 class TestTPM(TestCase):
