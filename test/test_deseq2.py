@@ -16,5 +16,20 @@ class TestDESeq2(TestCase):
             sample_info_table=f'{self.indir}/22_1209_randomize_rna_seq_data_sample_info.csv',
             gene_id_column='gene_id',
             sample_id_column='sample_id',
-            sample_group_column='group'
+            sample_group_column='group',
+            control_group_name='normal',
+            experimental_group_name='cancer',
         )
+
+    def test_invalid_group_name(self):
+        invalid_group_name = 'X'
+        with self.assertRaises(AssertionError):
+            DESeq2(self.settings).main(
+                count_table=f'{self.indir}/22_1209_randomize_rna_seq_data_count.csv',
+                sample_info_table=f'{self.indir}/22_1209_randomize_rna_seq_data_sample_info.csv',
+                gene_id_column='gene_id',
+                sample_id_column='sample_id',
+                sample_group_column='group',
+                control_group_name='normal',
+                experimental_group_name=invalid_group_name,
+            )

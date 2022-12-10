@@ -10,6 +10,8 @@ class DESeq2(Processor):
     gene_id_column: str
     sample_id_column: str
     sample_group_column: str
+    control_group_name: str
+    experimental_group_name: str
 
     r_script: str
     statistics_csv: str
@@ -23,14 +25,19 @@ class DESeq2(Processor):
             sample_info_table: str,
             gene_id_column: str,
             sample_id_column: str,
-            sample_group_column: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+            sample_group_column: str,
+            control_group_name: str,
+            experimental_group_name: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
         self.count_table = count_table
         self.sample_info_table = sample_info_table
         self.gene_id_column = gene_id_column
         self.sample_id_column = sample_id_column
         self.sample_group_column = sample_group_column
+        self.control_group_name = control_group_name
+        self.experimental_group_name = experimental_group_name
 
+        self.check_group_name()
         self.set_output_csvs()
         self.set_r_script()
         self.run_r_script()
@@ -38,6 +45,20 @@ class DESeq2(Processor):
         self.rewrite_output_csvs()
 
         return self.statistics_df, self.normalized_count_df
+
+    def check_group_name(self):
+        fpath = self.sample_info_table
+
+        df = pd.read_csv(
+            fpath,
+            sep=',' if fpath.endswith('.csv') else '\\t',
+            index_col=self.sample_id_column)
+
+        valid_group_names = set(df[self.sample_group_column])
+        for name in [self.control_group_name, self.experimental_group_name]:
+            if name not in valid_group_names:
+                msg = f'"{name}" does not exists in the "{self.sample_group_column}" column of "{self.sample_info_table}"'
+                raise AssertionError(msg)
 
     def set_output_csvs(self):
         self.statistics_csv = f'{self.outdir}/deseq2_statistics.csv'
@@ -76,7 +97,10 @@ dataset <- DESeqDataSetFromMatrix(
 dataset <- DESeq(dataset)
 
 # get deseq2 results
-res <- results(dataset)
+res <- results(
+    dataset,
+    contrast=c("{self.sample_group_column}", "{self.control_group_name}", "{self.experimental_group_name}")
+)
 
 # differential gene expression statistics
 statistics_df <- data.frame(
