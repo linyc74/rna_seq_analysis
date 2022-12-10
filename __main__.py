@@ -35,6 +35,15 @@ REQUIRED = [
 ]
 OPTIONAL = [
     {
+        'keys': ['--gene-id-column'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'gene_id',
+            'help': 'gene id column in the gene-info-table (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--gene-length-column'],
         'properties': {
             'type': str,
@@ -44,12 +53,39 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--sample-id-column'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'sample_id',
+            'help': 'sample id column in the sample-info-table (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--sample-group-column'],
         'properties': {
             'type': str,
             'required': False,
             'default': 'group',
-            'help': 'group column in the sample-info-table (default: %(default)s)',
+            'help': 'sample group column in the sample-info-table (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--control-group-name'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'normal',
+            'help': 'control group name in the "sample group column" (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--experimental-group-name'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'tumor',
+            'help': 'experimental group name in the "sample group column" (default: %(default)s)',
         }
     },
     {
@@ -125,16 +161,19 @@ class EntryPoint:
     def run(self):
         args = self.parser.parse_args()
         print(f'Start running RNA-seq Analysis version {__VERSION__}\n', flush=True)
-        rna_seq_analysis.Main().main(
+        rna_seq_analysis.main(
             count_table=args.count_table,
             sample_info_table=args.sample_info_table,
             gene_info_table=args.gene_info_table,
+            gene_id_column=args.gene_id_column,
             gene_length_column=args.gene_length_column,
-            sample_group_column=args.gene_length_column,
+            sample_id_column=args.sample_id_column,
+            sample_group_column=args.sample_group_column,
+            control_group_name=args.control_group_name,
+            experimental_group_name=args.experimental_group_name,
             threads=args.threads,
             debug=args.debug,
-            outdir=args.outdir
-        )
+            outdir=args.outdir)
 
 
 if __name__ == '__main__':

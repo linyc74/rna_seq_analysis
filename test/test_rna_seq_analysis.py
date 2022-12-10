@@ -12,9 +12,13 @@ class TestRNASeqAnalysis(TestCase):
 
     def test_main(self):
         RNASeqAnalysis(self.settings).main(
-            count_table=f'{self.indir}/count-table.csv',
-            sample_info_table=f'{self.indir}/sample-info-table.csv',
-            gene_info_table=f'{self.indir}/gene-info-table.csv',
-            gene_length_column='Gene Length',
-            sample_group_column='Group'
+            count_table=f'{self.indir}/22_1209_randomize_rna_seq_data_count.csv',
+            sample_info_table=f'{self.indir}/22_1209_randomize_rna_seq_data_sample_info.csv',
+            gene_info_table=f'{self.indir}/22_1209_randomize_rna_seq_data_gene_info.csv',
+            gene_id_column='gene_id',
+            gene_length_column='gene_length',
+            sample_id_column='sample_id',
+            sample_group_column='group',
+            control_group_name='normal',
+            experimental_group_name='cancer'
         )
