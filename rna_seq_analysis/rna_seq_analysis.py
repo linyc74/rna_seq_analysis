@@ -1,5 +1,6 @@
 import pandas as pd
 from .tpm import TPM
+from .gsea import GSEA
 from .deseq2 import DESeq2
 from .template import Processor
 
@@ -21,6 +22,8 @@ class RNASeqAnalysis(Processor):
     gene_info_df: pd.DataFrame
 
     tpm_df: pd.DataFrame
+    deseq2_normalized_count_df: pd.DataFrame
+    deseq2_statistics_df: pd.DataFrame
 
     def main(
             self,
@@ -68,7 +71,7 @@ class RNASeqAnalysis(Processor):
             gene_length_column=self.gene_length_column)
 
     def deseq2(self):
-        DESeq2(self.settings).main(
+        self.deseq2_statistics_df, self.deseq2_normalized_count_df = DESeq2(self.settings).main(
             count_table=self.count_table,
             sample_info_table=self.sample_info_table,
             gene_id_column=self.gene_id_column,
