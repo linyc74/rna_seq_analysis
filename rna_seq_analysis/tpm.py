@@ -24,6 +24,7 @@ class TPM(Processor):
         self.set_gene_lengths()
         self.normalize_by_gene_kb_lengths()
         self.normalize_by_million_reads_per_sample()
+        self.dropna()
         self.save_csv()
 
         return self.df
@@ -44,6 +45,10 @@ class TPM(Processor):
     def normalize_by_million_reads_per_sample(self):
         million_reads_per_sample = np.sum(self.df, axis=0) / 1e+6
         self.df = self.df / million_reads_per_sample
+
+    def dropna(self):
+        # NA due to some genes don't have gene length
+        self.df = self.df.dropna(how='any')
 
     def save_csv(self):
         self.df.to_csv(f'{self.outdir}/tpm.csv')
