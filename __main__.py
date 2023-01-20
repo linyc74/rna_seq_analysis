@@ -53,21 +53,21 @@ OPTIONAL = [
         }
     },
     {
-        'keys': ['--heatmap-read-fraction'],
-        'properties': {
-            'type': float,
-            'required': False,
-            'default': 0.8,
-            'help': 'fraction of TPM reads to be included in the heatmap (default: %(default)s)',
-        }
-    },
-    {
         'keys': ['--sample-id-column'],
         'properties': {
             'type': str,
             'required': False,
             'default': 'sample_id',
             'help': 'sample id column in the sample-info-table (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--heatmap-read-fraction'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 0.8,
+            'help': 'fraction of TPM reads to be included in the heatmap (default: %(default)s)',
         }
     },
     {
