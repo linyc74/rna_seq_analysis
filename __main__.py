@@ -53,6 +53,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--heatmap-read-fraction'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 0.8,
+            'help': 'fraction of TPM reads to be included in the heatmap (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--sample-id-column'],
         'properties': {
             'type': str,
@@ -168,6 +177,7 @@ class EntryPoint:
             gene_id_column=args.gene_id_column,
             gene_length_column=args.gene_length_column,
             sample_id_column=args.sample_id_column,
+            heatmap_read_fraction=args.heatmap_read_fraction,
             sample_group_column=args.sample_group_column,
             control_group_name=args.control_group_name,
             experimental_group_name=args.experimental_group_name,

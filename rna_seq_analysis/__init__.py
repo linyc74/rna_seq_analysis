@@ -10,6 +10,7 @@ def main(
         gene_id_column: str,
         gene_length_column: str,
         sample_id_column: str,
+        heatmap_read_fraction: float,
         sample_group_column: str,
         control_group_name: str,
         experimental_group_name: str,
@@ -31,6 +32,7 @@ def main(
         gene_id_column=gene_id_column,
         gene_length_column=gene_length_column,
         sample_id_column=sample_id_column,
+        heatmap_read_fraction=heatmap_read_fraction,
         sample_group_column=sample_group_column,
         control_group_name=control_group_name,
         experimental_group_name=experimental_group_name)

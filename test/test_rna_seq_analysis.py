@@ -18,6 +18,7 @@ class TestRNASeqAnalysis(TestCase):
             gene_id_column='gene_id',
             gene_length_column='gene_length',
             sample_id_column='sample_id',
+            heatmap_read_fraction=0.8,
             sample_group_column='group',
             control_group_name='normal',
             experimental_group_name='cancer'

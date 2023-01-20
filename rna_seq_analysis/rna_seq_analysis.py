@@ -2,6 +2,7 @@ import pandas as pd
 from .tpm import TPM
 from .gsea import GSEA
 from .deseq2 import DESeq2
+from .heatmap import Heatmap
 from .template import Processor
 
 
@@ -13,6 +14,7 @@ class RNASeqAnalysis(Processor):
     gene_id_column: str
     gene_length_column: str
     sample_id_column: str
+    heatmap_read_fraction: float
     sample_group_column: str
     control_group_name: str
     experimental_group_name: str
@@ -33,6 +35,7 @@ class RNASeqAnalysis(Processor):
             gene_id_column: str,
             gene_length_column: str,
             sample_id_column: str,
+            heatmap_read_fraction: float,
             sample_group_column: str,
             control_group_name: str,
             experimental_group_name: str):
@@ -43,12 +46,14 @@ class RNASeqAnalysis(Processor):
         self.gene_id_column = gene_id_column
         self.gene_length_column = gene_length_column
         self.sample_id_column = sample_id_column
+        self.heatmap_read_fraction = heatmap_read_fraction
         self.sample_group_column = sample_group_column
         self.control_group_name = control_group_name
         self.experimental_group_name = experimental_group_name
 
         self.read_tables()
         self.tpm()
+        self.heatmap()
         self.deseq2()
 
     def read_tables(self):
@@ -69,6 +74,11 @@ class RNASeqAnalysis(Processor):
             count_df=self.count_df,
             gene_info_df=self.gene_info_df,
             gene_length_column=self.gene_length_column)
+
+    def heatmap(self):
+        Heatmap(self.settings).main(
+            tpm_df=self.tpm_df,
+            heatmap_read_fraction=self.heatmap_read_fraction)
 
     def deseq2(self):
         self.deseq2_statistics_df, self.deseq2_normalized_count_df = DESeq2(self.settings).main(
