@@ -134,10 +134,7 @@ write.csv(
 
     def read_output_csvs(self):
         self.statistics_df = pd.read_csv(self.statistics_csv, index_col=0)
-        # self.statistics_df.index.name = self.gene_id_column
-
         self.normalized_count_df = pd.read_csv(self.normalized_count_csv, index_col=0)
-        # self.normalized_count_df.index.name = self.gene_id_column
 
     def rewrite_output_csvs(self):
         self.statistics_df.to_csv(self.statistics_csv, index=True)

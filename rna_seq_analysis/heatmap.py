@@ -264,4 +264,4 @@ class Clustermap(Processor):
         return dpi
 
     def save_csv(self):
-        self.data.to_csv(f'{self.output_prefix}.csv', sep='\t', index=True)
+        self.data.to_csv(f'{self.output_prefix}.csv', index=True)

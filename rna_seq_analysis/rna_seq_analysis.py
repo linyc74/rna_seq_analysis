@@ -58,6 +58,9 @@ class RNASeqAnalysis(Processor):
         self.sample_info_df = self.__read(self.sample_info_table)
         self.gene_info_df = self.__read(self.gene_info_table)
 
+        for df in [self.count_df, self.sample_info_df, self.gene_info_df]:
+            df.index.name = None  # make all final output files clean without index names
+
     def __read(self, file: str) -> pd.DataFrame:
         sep = ','
         for ext in ['.tsv', '.txt', '.tab']:
