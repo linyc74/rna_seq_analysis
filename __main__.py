@@ -21,7 +21,7 @@ REQUIRED = [
         'properties': {
             'type': str,
             'required': True,
-            'help': 'path to the sample info table (sample rows)',
+            'help': 'path to the sample info table (sample rows), the first (index) column should be sample ID',
         }
     },
     {
@@ -29,20 +29,11 @@ REQUIRED = [
         'properties': {
             'type': str,
             'required': True,
-            'help': 'path to the gene info table (gene rows)',
+            'help': 'path to the gene info table (gene rows), the first (index) column should be gene ID',
         }
     },
 ]
 OPTIONAL = [
-    {
-        'keys': ['--gene-id-column'],
-        'properties': {
-            'type': str,
-            'required': False,
-            'default': 'gene_id',
-            'help': 'gene id column in the gene-info-table (default: %(default)s)',
-        }
-    },
     {
         'keys': ['--gene-length-column'],
         'properties': {
@@ -50,15 +41,6 @@ OPTIONAL = [
             'required': False,
             'default': 'gene_length',
             'help': 'gene length column in the gene-info-table (default: %(default)s)',
-        }
-    },
-    {
-        'keys': ['--sample-id-column'],
-        'properties': {
-            'type': str,
-            'required': False,
-            'default': 'sample_id',
-            'help': 'sample id column in the sample-info-table (default: %(default)s)',
         }
     },
     {
@@ -174,9 +156,7 @@ class EntryPoint:
             count_table=args.count_table,
             sample_info_table=args.sample_info_table,
             gene_info_table=args.gene_info_table,
-            gene_id_column=args.gene_id_column,
             gene_length_column=args.gene_length_column,
-            sample_id_column=args.sample_id_column,
             heatmap_read_fraction=args.heatmap_read_fraction,
             sample_group_column=args.sample_group_column,
             control_group_name=args.control_group_name,

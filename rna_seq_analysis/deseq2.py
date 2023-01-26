@@ -7,8 +7,6 @@ class DESeq2(Processor):
 
     count_table: str
     sample_info_table: str
-    gene_id_column: str
-    sample_id_column: str
     sample_group_column: str
     control_group_name: str
     experimental_group_name: str
@@ -23,16 +21,12 @@ class DESeq2(Processor):
             self,
             count_table: str,
             sample_info_table: str,
-            gene_id_column: str,
-            sample_id_column: str,
             sample_group_column: str,
             control_group_name: str,
             experimental_group_name: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
         self.count_table = count_table
         self.sample_info_table = sample_info_table
-        self.gene_id_column = gene_id_column
-        self.sample_id_column = sample_id_column
         self.sample_group_column = sample_group_column
         self.control_group_name = control_group_name
         self.experimental_group_name = experimental_group_name
@@ -52,7 +46,8 @@ class DESeq2(Processor):
         df = pd.read_csv(
             fpath,
             sep=',' if fpath.endswith('.csv') else '\\t',
-            index_col=self.sample_id_column)
+            index_col=0
+        )
 
         valid_group_names = set(df[self.sample_group_column])
         for name in [self.control_group_name, self.experimental_group_name]:
@@ -74,7 +69,7 @@ count_df <- read.table(
     file='{self.count_table}',
     header=TRUE,
     sep='{sep1}',
-    row.names='{self.gene_id_column}',
+    row.names=1,
     check.names=FALSE
 )
 
@@ -82,7 +77,7 @@ sample_sheet_df <- read.table(
     file='{self.sample_info_table}',
     header=TRUE,
     sep='{sep2}',
-    row.names='{self.sample_id_column}',
+    row.names=1,
     check.names=FALSE
 )
 
@@ -139,10 +134,10 @@ write.csv(
 
     def read_output_csvs(self):
         self.statistics_df = pd.read_csv(self.statistics_csv, index_col=0)
-        self.statistics_df.index.name = self.gene_id_column
+        # self.statistics_df.index.name = self.gene_id_column
 
         self.normalized_count_df = pd.read_csv(self.normalized_count_csv, index_col=0)
-        self.normalized_count_df.index.name = self.gene_id_column
+        # self.normalized_count_df.index.name = self.gene_id_column
 
     def rewrite_output_csvs(self):
         self.statistics_df.to_csv(self.statistics_csv, index=True)

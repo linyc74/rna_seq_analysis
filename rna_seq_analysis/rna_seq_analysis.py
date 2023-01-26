@@ -1,5 +1,6 @@
 import pandas as pd
 from .tpm import TPM
+from .pca import PCA
 from .gsea import GSEA
 from .deseq2 import DESeq2
 from .heatmap import Heatmap
@@ -11,9 +12,7 @@ class RNASeqAnalysis(Processor):
     count_table: str
     sample_info_table: str
     gene_info_table: str
-    gene_id_column: str
     gene_length_column: str
-    sample_id_column: str
     heatmap_read_fraction: float
     sample_group_column: str
     control_group_name: str
@@ -32,9 +31,7 @@ class RNASeqAnalysis(Processor):
             count_table: str,
             sample_info_table: str,
             gene_info_table: str,
-            gene_id_column: str,
             gene_length_column: str,
-            sample_id_column: str,
             heatmap_read_fraction: float,
             sample_group_column: str,
             control_group_name: str,
@@ -43,9 +40,7 @@ class RNASeqAnalysis(Processor):
         self.count_table = count_table
         self.sample_info_table = sample_info_table
         self.gene_info_table = gene_info_table
-        self.gene_id_column = gene_id_column
         self.gene_length_column = gene_length_column
-        self.sample_id_column = sample_id_column
         self.heatmap_read_fraction = heatmap_read_fraction
         self.sample_group_column = sample_group_column
         self.control_group_name = control_group_name
@@ -55,6 +50,8 @@ class RNASeqAnalysis(Processor):
         self.tpm()
         self.heatmap()
         self.deseq2()
+        self.gsea()
+        self.pca()
 
     def read_tables(self):
         self.count_df = self.__read(self.count_table)
@@ -84,8 +81,15 @@ class RNASeqAnalysis(Processor):
         self.deseq2_statistics_df, self.deseq2_normalized_count_df = DESeq2(self.settings).main(
             count_table=self.count_table,
             sample_info_table=self.sample_info_table,
-            gene_id_column=self.gene_id_column,
-            sample_id_column=self.sample_id_column,
             sample_group_column=self.sample_group_column,
             control_group_name=self.control_group_name,
             experimental_group_name=self.experimental_group_name)
+
+    def gsea(self):
+        # self.deseq2_normalized_count_df
+        GSEA(self.settings)
+
+    def pca(self):
+        # self.tpm_df
+        # self.deseq2_normalized_count_df
+        PCA(self.settings)
