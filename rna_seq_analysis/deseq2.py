@@ -56,8 +56,8 @@ class DESeq2(Processor):
                 raise AssertionError(msg)
 
     def set_output_csvs(self):
-        self.statistics_csv = f'{self.outdir}/deseq2_statistics.csv'
-        self.normalized_count_csv = f'{self.outdir}/deseq2_normalized_count.csv'
+        self.statistics_csv = f'{self.outdir}/deseq2-statistics.csv'
+        self.normalized_count_csv = f'{self.outdir}/deseq2-normalized-count.csv'
 
     def set_r_script(self):
         sep1 = ',' if self.count_table.endswith('.csv') else '\\t'

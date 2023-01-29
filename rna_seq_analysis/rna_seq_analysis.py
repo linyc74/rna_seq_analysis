@@ -93,15 +93,12 @@ class RNASeqAnalysis(Processor):
         GSEA(self.settings)
 
     def pca(self):
-        PCA(self.settings).main(
-            feature_by_sample_df=self.tpm_df,
-            sample_info_df=self.sample_info_df,
-            sample_group_column=self.sample_group_column,
-            output_prefix='pca-tpm'
-        )
-        PCA(self.settings).main(
-            feature_by_sample_df=self.deseq2_normalized_count_df,
-            sample_info_df=self.sample_info_df,
-            sample_group_column=self.sample_group_column,
-            output_prefix='pca-deseq2'
-        )
+        for feature_by_sample_df, output_prefix in [
+            (self.tpm_df, 'pca-tpm'),
+            (self.deseq2_normalized_count_df, 'pca-deseq2'),
+        ]:
+            PCA(self.settings).main(
+                feature_by_sample_df=feature_by_sample_df,
+                sample_info_df=self.sample_info_df,
+                sample_group_column=self.sample_group_column,
+                output_prefix=output_prefix)

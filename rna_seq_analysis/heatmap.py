@@ -18,7 +18,8 @@ class Heatmap(Processor):
             self,
             tpm_df: pd.DataFrame,
             heatmap_read_fraction: float):
-        self.tpm_df = tpm_df
+
+        self.tpm_df = tpm_df.copy()
         self.heatmap_read_fraction = heatmap_read_fraction
 
         self.filter_by_cumulative_reads()
@@ -101,7 +102,7 @@ class FilterByCumulativeReads(Processor):
 
         msg = f'''\
 Total genes: {total_rows}
-Keep the most abundant genes covering {self.heatmap_read_fraction * 100:.2f}% of TPM: {n_rows} genes'''
+For heatmap, keep the most abundant genes covering {self.heatmap_read_fraction * 100:.2f}% of TPM: {n_rows} genes'''
         self.logger.info(msg)
 
     def clean_up(self):
