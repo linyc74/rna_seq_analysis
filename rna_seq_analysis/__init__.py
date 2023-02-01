@@ -1,3 +1,4 @@
+import os
 from .template import Settings
 from .tools import get_temp_path
 from .rna_seq_analysis import RNASeqAnalysis
@@ -24,6 +25,9 @@ def main(
         threads=int(threads),
         debug=debug,
         mock=False)
+
+    for d in [settings.workdir, settings.outdir]:
+        os.makedirs(d, exist_ok=True)
 
     RNASeqAnalysis(settings).main(
         count_table=count_table,
