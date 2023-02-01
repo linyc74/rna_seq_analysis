@@ -12,7 +12,9 @@ class RNASeqAnalysis(Processor):
     count_table: str
     sample_info_table: str
     gene_info_table: str
+    gene_sets_gmt: str
     gene_length_column: str
+    gene_name_column: str
     heatmap_read_fraction: float
     sample_group_column: str
     control_group_name: str
@@ -31,7 +33,9 @@ class RNASeqAnalysis(Processor):
             count_table: str,
             sample_info_table: str,
             gene_info_table: str,
+            gene_sets_gmt: str,
             gene_length_column: str,
+            gene_name_column: str,
             heatmap_read_fraction: float,
             sample_group_column: str,
             control_group_name: str,
@@ -40,7 +44,9 @@ class RNASeqAnalysis(Processor):
         self.count_table = count_table
         self.sample_info_table = sample_info_table
         self.gene_info_table = gene_info_table
+        self.gene_sets_gmt = gene_sets_gmt
         self.gene_length_column = gene_length_column
+        self.gene_name_column = gene_name_column
         self.heatmap_read_fraction = heatmap_read_fraction
         self.sample_group_column = sample_group_column
         self.control_group_name = control_group_name
@@ -89,8 +95,15 @@ class RNASeqAnalysis(Processor):
             experimental_group_name=self.experimental_group_name)
 
     def gsea(self):
-        # self.deseq2_normalized_count_df
-        GSEA(self.settings)
+        GSEA(self.settings).main(
+            count_df=self.deseq2_normalized_count_df,
+            gene_info_df=self.gene_info_df,
+            sample_info_df=self.sample_info_df,
+            gene_name_column=self.gene_name_column,
+            sample_group_column=self.sample_group_column,
+            control_group_name=self.control_group_name,
+            experimental_group_name=self.experimental_group_name,
+            gene_sets_gmt=self.gene_sets_gmt)
 
     def pca(self):
         for feature_by_sample_df, output_prefix in [

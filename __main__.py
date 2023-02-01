@@ -32,6 +32,14 @@ REQUIRED = [
             'help': 'path to the gene info table (gene rows), the first (index) column should be gene ID',
         }
     },
+    {
+        'keys': ['-m', '--gene-sets-gmt'],
+        'properties': {
+            'type': str,
+            'required': True,
+            'help': 'path to the gene sets gmt file for GSEA',
+        }
+    },
 ]
 OPTIONAL = [
     {
@@ -41,6 +49,15 @@ OPTIONAL = [
             'required': False,
             'default': 'gene_length',
             'help': 'gene length column in the gene-info-table (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--gene-name-column'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'gene_name',
+            'help': 'gene name (aka symbol) column in the gene-info-table (default: %(default)s)',
         }
     },
     {
@@ -84,7 +101,7 @@ OPTIONAL = [
         'properties': {
             'type': str,
             'required': False,
-            'default': 'rna_seq_pipeline_outdir',
+            'default': 'rna_seq_analysis_outdir',
             'help': 'path to the output directory (default: %(default)s)',
         }
     },
@@ -156,7 +173,9 @@ class EntryPoint:
             count_table=args.count_table,
             sample_info_table=args.sample_info_table,
             gene_info_table=args.gene_info_table,
+            gene_sets_gmt=args.gene_sets_gmt,
             gene_length_column=args.gene_length_column,
+            gene_name_column=args.gene_name_column,
             heatmap_read_fraction=args.heatmap_read_fraction,
             sample_group_column=args.sample_group_column,
             control_group_name=args.control_group_name,
