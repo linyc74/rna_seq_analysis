@@ -1,4 +1,6 @@
 import os
+import shutil
+
 from .template import Settings
 from .tools import get_temp_path
 from .rna_seq_analysis import RNASeqAnalysis
@@ -40,3 +42,6 @@ def main(
         sample_group_column=sample_group_column,
         control_group_name=control_group_name,
         experimental_group_name=experimental_group_name)
+
+    if not settings.debug:
+        shutil.rmtree(settings.workdir)
