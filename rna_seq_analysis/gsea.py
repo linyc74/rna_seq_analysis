@@ -1,3 +1,5 @@
+import os
+from os.path import abspath
 import pandas as pd
 from typing import List, Any
 from .template import Processor
@@ -221,6 +223,8 @@ class RunGSEA(Processor):
     experimental_group_name: str
     out_dirname: str
 
+    args: List[str]
+
     def main(
             self,
             expression_txt: str,
@@ -237,7 +241,19 @@ class RunGSEA(Processor):
         self.experimental_group_name = experimental_group_name
         self.out_dirname = out_dirname
 
-        args = [
+        self.make_all_paths_absolute()
+        self.set_args()
+        self.run_gsea()
+
+    def make_all_paths_absolute(self):
+        self.expression_txt = abspath(self.expression_txt)
+        self.groups_cls = abspath(self.groups_cls)
+        self.gene_sets_gmt = abspath(self.gene_sets_gmt)
+        self.workdir = abspath(self.workdir)
+        self.outdir = abspath(self.outdir)
+
+    def set_args(self):
+        self.args = [
             'gsea-cli.sh GSEA',
             f'-res {self.expression_txt}',
             f'-cls {self.groups_cls}#{self.control_group_name}_versus_{self.experimental_group_name}',
@@ -266,7 +282,12 @@ class RunGSEA(Processor):
             f'-set_max {self.MAX_SIZE_EXCLUDE_LARGER_SETS}',
             f'-set_min {self.MIN_SIZE_EXCLUDE_SMALLER_SETS}',
             f'-zip_report {self.MAKE_A_ZIPPED_FILE_WITH_ALL_REPORTS}',
-            f'1> {self.outdir}/gsea.log',
-            f'2> {self.outdir}/gsea.log',
+            f'1> {os.path.abspath(self.outdir)}/gsea.log',
+            f'2> {os.path.abspath(self.outdir)}/gsea.log',
         ]
-        self.call(self.CMD_LINEBREAK.join(args))
+
+    def run_gsea(self):
+        cwd = os.getcwd()
+        os.chdir(self.workdir)  # to make the gsea temp directory appear in workdir
+        self.call(self.CMD_LINEBREAK.join(self.args))
+        os.chdir(cwd)  # change back to the original directory
