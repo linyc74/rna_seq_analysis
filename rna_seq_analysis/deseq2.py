@@ -94,7 +94,7 @@ dataset <- DESeq(dataset)
 # get deseq2 results
 res <- results(
     dataset,
-    contrast=c("{self.sample_group_column}", "{self.control_group_name}", "{self.experimental_group_name}")
+    contrast=c("{self.sample_group_column}", "{self.experimental_group_name}", "{self.control_group_name}")
 )
 
 # differential gene expression statistics

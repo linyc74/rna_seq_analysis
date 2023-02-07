@@ -256,7 +256,7 @@ class RunGSEA(Processor):
         self.args = [
             'gsea-cli.sh GSEA',
             f'-res {self.expression_txt}',
-            f'-cls {self.groups_cls}#{self.control_group_name}_versus_{self.experimental_group_name}',
+            f'-cls {self.groups_cls}#{self.experimental_group_name}_versus_{self.control_group_name}',
             f'-gmx {self.gene_sets_gmt}',
             f'-out {self.outdir}/{self.out_dirname}',
             f'-collapse {self.COLLAPSE_REMAP_TO_GENE_SYMBOLS}',
