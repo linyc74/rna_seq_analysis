@@ -10,6 +10,8 @@ class DESeq2(Processor):
     sample_group_column: str
     control_group_name: str
     experimental_group_name: str
+    gene_info_df: pd.DataFrame
+    gene_name_column: str
 
     r_script: str
     statistics_csv: str
@@ -23,19 +25,24 @@ class DESeq2(Processor):
             sample_info_table: str,
             sample_group_column: str,
             control_group_name: str,
-            experimental_group_name: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+            experimental_group_name: str,
+            gene_info_df: pd.DataFrame,
+            gene_name_column: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
         self.count_table = count_table
         self.sample_info_table = sample_info_table
         self.sample_group_column = sample_group_column
         self.control_group_name = control_group_name
         self.experimental_group_name = experimental_group_name
+        self.gene_info_df = gene_info_df
+        self.gene_name_column = gene_name_column
 
         self.check_group_name()
         self.set_output_csvs()
         self.set_r_script()
         self.run_r_script()
-        self.read_output_csvs()
+        self.read_deseq2_output_csvs()
+        self.add_gene_name_to_statistics_df()
         self.rewrite_output_csvs()
 
         return self.statistics_df, self.normalized_count_df
@@ -132,9 +139,27 @@ write.csv(
         ])
         self.call(cmd)
 
-    def read_output_csvs(self):
+    def read_deseq2_output_csvs(self):
         self.statistics_df = pd.read_csv(self.statistics_csv, index_col=0)
         self.normalized_count_df = pd.read_csv(self.normalized_count_csv, index_col=0)
+
+    def add_gene_name_to_statistics_df(self):
+        df = self.statistics_df
+
+        n = len(df)
+        df = df.merge(
+            right=self.gene_info_df[[self.gene_name_column]],
+            right_index=True,
+            left_index=True,
+            how='left'
+        )
+        assert len(df) == n
+
+        columns = df.columns.tolist()
+        reordered = columns[-1:] + columns[0:-1]
+        df = df[reordered]
+
+        self.statistics_df = df
 
     def rewrite_output_csvs(self):
         self.statistics_df.to_csv(self.statistics_csv, index=True)

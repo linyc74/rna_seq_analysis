@@ -92,7 +92,9 @@ class RNASeqAnalysis(Processor):
             sample_info_table=self.sample_info_table,
             sample_group_column=self.sample_group_column,
             control_group_name=self.control_group_name,
-            experimental_group_name=self.experimental_group_name)
+            experimental_group_name=self.experimental_group_name,
+            gene_info_df=self.gene_info_df,
+            gene_name_column=self.gene_name_column)
 
     def gsea(self):
         GSEA(self.settings).main(
