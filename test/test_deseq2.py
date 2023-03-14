@@ -9,8 +9,8 @@ class TestDESeq2(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    # def tearDown(self):
-    #     self.tear_down()
+    def tearDown(self):
+        self.tear_down()
 
     def test_main(self):
         DESeq2(self.settings).main(
