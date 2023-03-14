@@ -2,7 +2,7 @@ import argparse
 import rna_seq_analysis
 
 
-__VERSION__ = '1.0.2'
+__VERSION__ = '1.0.3-beta'
 
 
 PROG = 'python rna_seq_analysis'
@@ -32,16 +32,17 @@ REQUIRED = [
             'help': 'path to the gene info table (gene rows), the first (index) column should be gene ID',
         }
     },
+]
+OPTIONAL = [
     {
         'keys': ['-m', '--gene-sets-gmt'],
         'properties': {
             'type': str,
-            'required': True,
-            'help': 'path to the gene sets gmt file for GSEA',
+            'required': False,
+            'default': 'None',
+            'help': 'path to the gene sets gmt file for GSEA, if None then skip GSEA (default: %(default)s)',
         }
     },
-]
-OPTIONAL = [
     {
         'keys': ['--gene-length-column'],
         'properties': {

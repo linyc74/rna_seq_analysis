@@ -1,4 +1,5 @@
 import pandas as pd
+from typing import Optional
 from .tpm import TPM
 from .pca import PCA
 from .gsea import GSEA
@@ -12,7 +13,7 @@ class RNASeqAnalysis(Processor):
     count_table: str
     sample_info_table: str
     gene_info_table: str
-    gene_sets_gmt: str
+    gene_sets_gmt: Optional[str]
     gene_length_column: str
     gene_name_column: str
     heatmap_read_fraction: float
@@ -33,7 +34,7 @@ class RNASeqAnalysis(Processor):
             count_table: str,
             sample_info_table: str,
             gene_info_table: str,
-            gene_sets_gmt: str,
+            gene_sets_gmt: Optional[str],
             gene_length_column: str,
             gene_name_column: str,
             heatmap_read_fraction: float,
@@ -97,15 +98,16 @@ class RNASeqAnalysis(Processor):
             gene_name_column=self.gene_name_column)
 
     def gsea(self):
-        GSEA(self.settings).main(
-            count_df=self.deseq2_normalized_count_df,
-            gene_info_df=self.gene_info_df,
-            sample_info_df=self.sample_info_df,
-            gene_name_column=self.gene_name_column,
-            sample_group_column=self.sample_group_column,
-            control_group_name=self.control_group_name,
-            experimental_group_name=self.experimental_group_name,
-            gene_sets_gmt=self.gene_sets_gmt)
+        if self.gene_sets_gmt is not None:
+            GSEA(self.settings).main(
+                count_df=self.deseq2_normalized_count_df,
+                gene_info_df=self.gene_info_df,
+                sample_info_df=self.sample_info_df,
+                gene_name_column=self.gene_name_column,
+                sample_group_column=self.sample_group_column,
+                control_group_name=self.control_group_name,
+                experimental_group_name=self.experimental_group_name,
+                gene_sets_gmt=self.gene_sets_gmt)
 
     def pca(self):
         for feature_by_sample_df, output_prefix in [

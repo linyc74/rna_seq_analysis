@@ -35,7 +35,7 @@ def main(
         count_table=count_table,
         sample_info_table=sample_info_table,
         gene_info_table=gene_info_table,
-        gene_sets_gmt=gene_sets_gmt,
+        gene_sets_gmt=None if gene_sets_gmt.lower() == 'none' else gene_sets_gmt,
         gene_length_column=gene_length_column,
         gene_name_column=gene_name_column,
         heatmap_read_fraction=heatmap_read_fraction,
