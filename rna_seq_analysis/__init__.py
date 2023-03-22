@@ -1,6 +1,4 @@
 import os
-import shutil
-
 from .template import Settings
 from .tools import get_temp_path
 from .rna_seq_analysis import RNASeqAnalysis
@@ -46,6 +44,3 @@ def main(
         experimental_group_name=experimental_group_name,
         skip_deseq2_gsea=skip_deseq2_gsea,
         gsea_input=gsea_input)
-
-    if not settings.debug:
-        shutil.rmtree(settings.workdir)

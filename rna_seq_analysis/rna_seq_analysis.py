@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from typing import Optional
 from .tpm import TPM
@@ -125,3 +126,19 @@ class RNASeqAnalysis(Processor):
             deseq2_normalized_count_df=self.deseq2_normalized_count_df,
             sample_info_df=self.sample_info_df,
             sample_group_column=self.sample_group_column)
+
+
+class CleanUp(Processor):
+
+    def main(self):
+        self.collect_log_files()
+        self.remove_workdir()
+
+    def collect_log_files(self):
+        os.makedirs(f'{self.outdir}/log', exist_ok=True)
+        cmd = f'mv {self.outdir}/*.log {self.outdir}/log/'
+        self.call(cmd)
+
+    def remove_workdir(self):
+        if not self.debug:
+            self.call(f'rm -r {self.workdir}')
