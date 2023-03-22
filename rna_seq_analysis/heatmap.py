@@ -1,47 +1,82 @@
+import os
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from typing import Tuple
+from typing import Tuple, Optional
 from .template import Processor
 
 
 class Heatmap(Processor):
 
-    LOG_PSEUDOCOUNT = True
-    NORMALIZE_BY_SAMPLE_READS = False
-
     tpm_df: pd.DataFrame
+    deseq2_normalized_count_df: Optional[pd.DataFrame]
     heatmap_read_fraction: float
 
     def main(
             self,
             tpm_df: pd.DataFrame,
+            deseq2_normalized_count_df: Optional[pd.DataFrame],
             heatmap_read_fraction: float):
 
-        self.tpm_df = tpm_df.copy()
+        self.tpm_df = tpm_df
+        self.deseq2_normalized_count_df = deseq2_normalized_count_df
         self.heatmap_read_fraction = heatmap_read_fraction
+
+        OneHeatmap(self.settings).main(
+            feature_by_sample_df=self.tpm_df,
+            heatmap_read_fraction=self.heatmap_read_fraction,
+            fname='heatmap-tpm'
+        )
+
+        if self.deseq2_normalized_count_df is not None:
+            OneHeatmap(self.settings).main(
+                feature_by_sample_df=self.deseq2_normalized_count_df,
+                heatmap_read_fraction=self.heatmap_read_fraction,
+                fname='heatmap-deseq2'
+            )
+
+
+class OneHeatmap(Processor):
+
+    LOG_PSEUDOCOUNT = True
+    NORMALIZE_BY_SAMPLE_READS = False
+
+    df: pd.DataFrame
+    heatmap_read_fraction: float
+    fname: str
+
+    def main(
+            self,
+            feature_by_sample_df: pd.DataFrame,
+            heatmap_read_fraction: float,
+            fname: str):
+
+        self.df = feature_by_sample_df.copy()
+        self.heatmap_read_fraction = heatmap_read_fraction
+        self.fname = fname
 
         self.filter_by_cumulative_reads()
         self.count_normalization()
         self.clustermap()
 
     def filter_by_cumulative_reads(self):
-        self.tpm_df = FilterByCumulativeReads(self.settings).main(
-            df=self.tpm_df,
+        self.logger.info(f'Filter by cumulative reads for "{self.fname}"')
+        self.df = FilterByCumulativeReads(self.settings).main(
+            df=self.df,
             heatmap_read_fraction=self.heatmap_read_fraction)
 
     def count_normalization(self):
-        self.tpm_df = CountNormalization(self.settings).main(
-            df=self.tpm_df,
+        self.df = CountNormalization(self.settings).main(
+            df=self.df,
             log_pseudocount=self.LOG_PSEUDOCOUNT,
             by_sample_reads=self.NORMALIZE_BY_SAMPLE_READS)
 
     def clustermap(self):
         Clustermap(self.settings).main(
-            data=self.tpm_df,
-            output_prefix=f'{self.outdir}/heatmap'
-        )
+            data=self.df,
+            fname=self.fname)
 
 
 class FilterByCumulativeReads(Processor):
@@ -102,7 +137,7 @@ class FilterByCumulativeReads(Processor):
 
         msg = f'''\
 Total genes: {total_rows}
-For heatmap, keep the most abundant genes covering {self.heatmap_read_fraction * 100:.2f}% of TPM: {n_rows} genes'''
+For heatmap, keep the most abundant genes covering {self.heatmap_read_fraction * 100:.2f}% of counts: {n_rows} genes'''
         self.logger.info(msg)
 
     def clean_up(self):
@@ -164,22 +199,24 @@ class Clustermap(Processor):
     COLORBAR_WIDTH = 0.01
     COLORBAR_HORIZONTAL_POSITION = 1.
     DPI = 600
+    DSTDIR_NAME = 'heatmap'
 
     data: pd.DataFrame
-    output_prefix: str
+    fname: str
 
     x_label_padding: float
     y_label_padding: float
     figsize: Tuple[float, float]
     grid: sns.matrix.ClusterGrid
 
-    def main(self, data: pd.DataFrame, output_prefix: str):
+    def main(self, data: pd.DataFrame, fname: str):
         self.data = data
-        self.output_prefix = output_prefix
+        self.fname = fname
 
         self.set_figsize()
         self.clustermap()
         self.config_clustermap()
+        self.make_dstdir()
         self.save_fig()
         self.save_csv()
 
@@ -248,13 +285,16 @@ class Clustermap(Processor):
             p.height  # height
         ])
 
+    def make_dstdir(self):
+        os.makedirs(f'{self.outdir}/{self.DSTDIR_NAME}', exist_ok=True)
+
     def save_fig(self):
         # must use grid.savefig(), but not plt.savefig()
         # plt.savefig() crops out the colorbar
 
         dpi = self.__downsize_dpi_if_too_large()
         for ext in ['pdf', 'png']:
-            self.grid.savefig(f'{self.output_prefix}.{ext}', dpi=dpi)
+            self.grid.savefig(f'{self.outdir}/{self.DSTDIR_NAME}/{self.fname}.{ext}', dpi=dpi)
         plt.close()
 
     def __downsize_dpi_if_too_large(self) -> int:
@@ -265,4 +305,4 @@ class Clustermap(Processor):
         return dpi
 
     def save_csv(self):
-        self.data.to_csv(f'{self.output_prefix}.csv', index=True)
+        self.data.to_csv(f'{self.outdir}/{self.DSTDIR_NAME}/{self.fname}.csv', index=True)

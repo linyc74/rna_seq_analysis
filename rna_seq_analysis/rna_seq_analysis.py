@@ -20,14 +20,15 @@ class RNASeqAnalysis(Processor):
     sample_group_column: str
     control_group_name: str
     experimental_group_name: str
+    skip_deseq2_gsea: bool
+    gsea_input: str
 
     count_df: pd.DataFrame
     sample_info_df: pd.DataFrame
     gene_info_df: pd.DataFrame
 
     tpm_df: pd.DataFrame
-    deseq2_normalized_count_df: pd.DataFrame
-    deseq2_statistics_df: pd.DataFrame
+    deseq2_normalized_count_df: Optional[pd.DataFrame]
 
     def main(
             self,
@@ -40,7 +41,9 @@ class RNASeqAnalysis(Processor):
             heatmap_read_fraction: float,
             sample_group_column: str,
             control_group_name: str,
-            experimental_group_name: str):
+            experimental_group_name: str,
+            skip_deseq2_gsea: bool,
+            gsea_input: str):
 
         self.count_table = count_table
         self.sample_info_table = sample_info_table
@@ -52,11 +55,13 @@ class RNASeqAnalysis(Processor):
         self.sample_group_column = sample_group_column
         self.control_group_name = control_group_name
         self.experimental_group_name = experimental_group_name
+        self.skip_deseq2_gsea = skip_deseq2_gsea
+        self.gsea_input = gsea_input
 
         self.read_tables()
         self.tpm()
-        self.heatmap()
         self.deseq2()
+        self.heatmap()
         self.gsea()
         self.pca()
 
@@ -82,40 +87,41 @@ class RNASeqAnalysis(Processor):
             gene_info_df=self.gene_info_df,
             gene_length_column=self.gene_length_column)
 
-    def heatmap(self):
-        Heatmap(self.settings).main(
-            tpm_df=self.tpm_df,
-            heatmap_read_fraction=self.heatmap_read_fraction)
-
     def deseq2(self):
-        self.deseq2_statistics_df, self.deseq2_normalized_count_df = DESeq2(self.settings).main(
-            count_table=self.count_table,
-            sample_info_table=self.sample_info_table,
-            sample_group_column=self.sample_group_column,
-            control_group_name=self.control_group_name,
-            experimental_group_name=self.experimental_group_name,
-            gene_info_df=self.gene_info_df,
-            gene_name_column=self.gene_name_column)
-
-    def gsea(self):
-        if self.gene_sets_gmt is not None:
-            GSEA(self.settings).main(
-                count_df=self.deseq2_normalized_count_df,
-                gene_info_df=self.gene_info_df,
-                sample_info_df=self.sample_info_df,
-                gene_name_column=self.gene_name_column,
+        if self.skip_deseq2_gsea:
+            self.deseq2_normalized_count_df = None
+        else:
+            self.deseq2_normalized_count_df = DESeq2(self.settings).main(
+                count_table=self.count_table,
+                sample_info_table=self.sample_info_table,
                 sample_group_column=self.sample_group_column,
                 control_group_name=self.control_group_name,
                 experimental_group_name=self.experimental_group_name,
-                gene_sets_gmt=self.gene_sets_gmt)
+                gene_info_df=self.gene_info_df,
+                gene_name_column=self.gene_name_column)
+
+    def heatmap(self):
+        Heatmap(self.settings).main(
+            tpm_df=self.tpm_df,
+            deseq2_normalized_count_df=self.deseq2_normalized_count_df,
+            heatmap_read_fraction=self.heatmap_read_fraction)
+
+    def gsea(self):
+        if self.skip_deseq2_gsea or self.gene_sets_gmt is None:
+            return
+        GSEA(self.settings).main(
+            count_df=self.tpm_df if self.gsea_input == 'tpm' else self.deseq2_normalized_count_df,
+            gene_info_df=self.gene_info_df,
+            sample_info_df=self.sample_info_df,
+            gene_name_column=self.gene_name_column,
+            sample_group_column=self.sample_group_column,
+            control_group_name=self.control_group_name,
+            experimental_group_name=self.experimental_group_name,
+            gene_sets_gmt=self.gene_sets_gmt)
 
     def pca(self):
-        for feature_by_sample_df, output_prefix in [
-            (self.tpm_df, 'pca-tpm'),
-            (self.deseq2_normalized_count_df, 'pca-deseq2'),
-        ]:
-            PCA(self.settings).main(
-                feature_by_sample_df=feature_by_sample_df,
-                sample_info_df=self.sample_info_df,
-                sample_group_column=self.sample_group_column,
-                output_prefix=output_prefix)
+        PCA(self.settings).main(
+            tpm_df=self.tpm_df,
+            deseq2_normalized_count_df=self.deseq2_normalized_count_df,
+            sample_info_df=self.sample_info_df,
+            sample_group_column=self.sample_group_column)

@@ -1,5 +1,4 @@
 import pandas as pd
-from typing import Tuple
 from .template import Processor
 
 
@@ -27,7 +26,7 @@ class DESeq2(Processor):
             control_group_name: str,
             experimental_group_name: str,
             gene_info_df: pd.DataFrame,
-            gene_name_column: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+            gene_name_column: str) -> pd.DataFrame:
 
         self.count_table = count_table
         self.sample_info_table = sample_info_table
@@ -45,7 +44,7 @@ class DESeq2(Processor):
         self.add_gene_name_to_statistics_df()
         self.rewrite_output_csvs()
 
-        return self.statistics_df, self.normalized_count_df
+        return self.normalized_count_df
 
     def check_group_name(self):
         fpath = self.sample_info_table

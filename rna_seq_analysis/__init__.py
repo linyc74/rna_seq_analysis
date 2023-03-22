@@ -17,6 +17,8 @@ def main(
         sample_group_column: str,
         control_group_name: str,
         experimental_group_name: str,
+        skip_deseq2_gsea: bool,
+        gsea_input: str,
         threads: int,
         debug: bool,
         outdir: str):
@@ -41,7 +43,9 @@ def main(
         heatmap_read_fraction=heatmap_read_fraction,
         sample_group_column=sample_group_column,
         control_group_name=control_group_name,
-        experimental_group_name=experimental_group_name)
+        experimental_group_name=experimental_group_name,
+        skip_deseq2_gsea=skip_deseq2_gsea,
+        gsea_input=gsea_input)
 
     if not settings.debug:
         shutil.rmtree(settings.workdir)

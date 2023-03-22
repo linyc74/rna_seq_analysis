@@ -1,20 +1,58 @@
+import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from typing import Tuple
+from typing import Tuple, Optional
 from matplotlib.axes import Axes
 from sklearn import decomposition
 from .template import Processor
 
 
+DSTDIR_NAME = 'pca'
+
+
 class PCA(Processor):
+
+    tpm_df: pd.DataFrame
+    deseq2_normalized_count_df: Optional[pd.DataFrame]
+    sample_info_df: pd.DataFrame
+    sample_group_column: str
+
+    def main(
+            self,
+            tpm_df: pd.DataFrame,
+            deseq2_normalized_count_df: Optional[pd.DataFrame],
+            sample_info_df: pd.DataFrame,
+            sample_group_column: str):
+
+        self.tpm_df = tpm_df
+        self.deseq2_normalized_count_df = deseq2_normalized_count_df
+        self.sample_info_df = sample_info_df
+        self.sample_group_column = sample_group_column
+
+        OnePCA(self.settings).main(
+            feature_by_sample_df=self.tpm_df,
+            sample_info_df=self.sample_info_df,
+            sample_group_column=self.sample_group_column,
+            fname='pca-tpm'
+        )
+        if self.deseq2_normalized_count_df is not None:
+            OnePCA(self.settings).main(
+                feature_by_sample_df=self.deseq2_normalized_count_df,
+                sample_info_df=self.sample_info_df,
+                sample_group_column=self.sample_group_column,
+                fname='pca-deseq2'
+            )
+
+
+class OnePCA(Processor):
 
     XY_COLUMNS = ('PC 1', 'PC 2')
 
     feature_by_sample_df: pd.DataFrame  # row features x column samples
     sample_info_df: pd.DataFrame
     sample_group_column: str
-    output_prefix: str
+    fname: str
 
     sample_coordinate_df: pd.DataFrame
     proportion_explained_series: pd.Series
@@ -24,15 +62,16 @@ class PCA(Processor):
             feature_by_sample_df: pd.DataFrame,
             sample_info_df: pd.DataFrame,
             sample_group_column: str,
-            output_prefix: str):
+            fname: str):
 
         self.feature_by_sample_df = feature_by_sample_df
         self.sample_info_df = sample_info_df
         self.sample_group_column = sample_group_column
-        self.output_prefix = output_prefix
+        self.fname = fname
 
         self.compute_pca()
         self.merge_group_info()
+        self.make_dstdir()
         self.write_sample_coordinate()
         self.plot_sample_coordinate()
         self.write_proportion_explained()
@@ -49,9 +88,12 @@ class PCA(Processor):
             how='left'
         )
 
+    def make_dstdir(self):
+        os.makedirs(f'{self.outdir}/{DSTDIR_NAME}', exist_ok=True)
+
     def write_sample_coordinate(self):
         self.sample_coordinate_df.to_csv(
-            f'{self.outdir}/{self.output_prefix}-sample-coordinate.csv'
+            f'{self.outdir}/{DSTDIR_NAME}/{self.fname}-sample-coordinate.csv'
         )
 
     def plot_sample_coordinate(self):
@@ -60,12 +102,12 @@ class PCA(Processor):
             x_column=self.XY_COLUMNS[0],
             y_column=self.XY_COLUMNS[1],
             hue_column=self.sample_group_column,
-            output_prefix=f'{self.outdir}/{self.output_prefix}-sample-coordinate'
+            fname=f'{self.fname}-sample-coordinate'
         )
 
     def write_proportion_explained(self):
         self.proportion_explained_series.to_csv(
-            f'{self.outdir}/{self.output_prefix}-proportion-explained.csv',
+            f'{self.outdir}/{DSTDIR_NAME}/{self.fname}-proportion-explained.csv',
             header=['Proportion Explained']
         )
 
@@ -131,7 +173,7 @@ class ScatterPlot(Processor):
     x_column: str
     y_column: str
     group_column: str
-    output_prefix: str
+    fname: str
 
     ax: Axes
 
@@ -141,13 +183,13 @@ class ScatterPlot(Processor):
             x_column: str,
             y_column: str,
             hue_column: str,
-            output_prefix: str):
+            fname: str):
 
         self.sample_coordinate_df = sample_coordinate_df
         self.x_column = x_column
         self.y_column = y_column
         self.group_column = hue_column
-        self.output_prefix = output_prefix
+        self.fname = fname
 
         self.init_figure()
         self.scatterplot()
@@ -175,5 +217,5 @@ class ScatterPlot(Processor):
 
     def save_figure(self):
         for ext in ['pdf', 'png']:
-            plt.savefig(f'{self.output_prefix}.{ext}', dpi=self.DPI)
+            plt.savefig(f'{self.outdir}/{DSTDIR_NAME}/{self.fname}.{ext}', dpi=self.DPI)
         plt.close()

@@ -1,4 +1,5 @@
 import pandas as pd
+from os.path import exists
 from rna_seq_analysis.pca import PCA
 from .setup import TestCase
 
@@ -13,13 +14,27 @@ class TestPCA(TestCase):
 
     def test_main(self):
 
-        feature_by_sample_df = pd.read_csv(f'{self.indir}/tpm.csv', index_col=0)
+        tpm_df = pd.read_csv(f'{self.indir}/tpm.csv', index_col=0)
+        deseq2_normalized_count_df = pd.read_csv(f'{self.indir}/deseq2_normalized_count.csv', index_col=0)
         sample_info_df = pd.read_csv(f'{self.indir}/22_1209_randomize_rna_seq_data_sample_info.csv', index_col=0)
         sample_group_column = 'group'
 
         PCA(self.settings).main(
-            feature_by_sample_df=feature_by_sample_df,
+            tpm_df=tpm_df,
+            deseq2_normalized_count_df=deseq2_normalized_count_df,
             sample_info_df=sample_info_df,
-            sample_group_column=sample_group_column,
-            output_prefix='pca-tpm'
+            sample_group_column=sample_group_column
         )
+
+        for filename in [
+            'pca-deseq2-proportion-explained.csv',
+            'pca-deseq2-sample-coordinate.csv',
+            'pca-deseq2-sample-coordinate.pdf',
+            'pca-deseq2-sample-coordinate.png',
+            'pca-tpm-proportion-explained.csv',
+            'pca-tpm-sample-coordinate.csv',
+            'pca-tpm-sample-coordinate.pdf',
+            'pca-tpm-sample-coordinate.png',
+        ]:
+            with self.subTest(filename=filename):
+                self.assertTrue(exists(f'{self.outdir}/pca/{filename}'))

@@ -98,6 +98,23 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--skip-deseq2-gsea'],
+        'properties': {
+            'action': 'store_true',
+            'help': 'completely skip DESeq2 and GSEA analyses, i.e. no group contrast',
+        }
+    },
+    {
+        'keys': ['--gsea-input'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'choices': ['deseq2', 'tpm'],
+            'default': 'deseq2',
+            'help': 'choice of gsea input count table (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['-o', '--outdir'],
         'properties': {
             'type': str,
@@ -181,6 +198,8 @@ class EntryPoint:
             sample_group_column=args.sample_group_column,
             control_group_name=args.control_group_name,
             experimental_group_name=args.experimental_group_name,
+            skip_deseq2_gsea=args.skip_deseq2_gsea,
+            gsea_input=args.gsea_input,
             threads=args.threads,
             debug=args.debug,
             outdir=args.outdir)
