@@ -65,6 +65,7 @@ class RNASeqAnalysis(Processor):
         self.heatmap()
         self.gsea()
         self.pca()
+        self.clean_up()
 
     def read_tables(self):
         self.count_df = self.__read(self.count_table)
@@ -126,6 +127,9 @@ class RNASeqAnalysis(Processor):
             deseq2_normalized_count_df=self.deseq2_normalized_count_df,
             sample_info_df=self.sample_info_df,
             sample_group_column=self.sample_group_column)
+
+    def clean_up(self):
+        CleanUp(self.settings).main()
 
 
 class CleanUp(Processor):
