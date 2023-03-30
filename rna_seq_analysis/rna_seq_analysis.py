@@ -5,6 +5,7 @@ from .tpm import TPM
 from .pca import PCA
 from .gsea import GSEA
 from .deseq2 import DESeq2
+from .tools import get_files
 from .heatmap import Heatmap
 from .template import Processor
 
@@ -139,6 +140,13 @@ class CleanUp(Processor):
         self.remove_workdir()
 
     def collect_log_files(self):
+        log_files = get_files(
+            source=self.outdir,
+            endswith='.log')
+
+        if len(log_files) == 0:
+            return
+
         os.makedirs(f'{self.outdir}/log', exist_ok=True)
         cmd = f'mv {self.outdir}/*.log {self.outdir}/log/'
         self.call(cmd)
