@@ -2,7 +2,7 @@ import argparse
 import rna_seq_analysis
 
 
-__VERSION__ = '1.0.5'
+__VERSION__ = '1.0.6-beta'
 
 
 PROG = 'python rna_seq_analysis'
@@ -95,6 +95,15 @@ OPTIONAL = [
             'required': False,
             'default': 'tumor',
             'help': 'experimental group name in the "sample group column" (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--sample-batch-column'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'batch',
+            'help': 'sample batch column in the sample-info-table (default: %(default)s)',
         }
     },
     {
@@ -198,6 +207,7 @@ class EntryPoint:
             sample_group_column=args.sample_group_column,
             control_group_name=args.control_group_name,
             experimental_group_name=args.experimental_group_name,
+            sample_batch_column=args.sample_batch_column,
             skip_deseq2_gsea=args.skip_deseq2_gsea,
             gsea_input=args.gsea_input,
             threads=args.threads,

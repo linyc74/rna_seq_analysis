@@ -8,6 +8,7 @@ from .deseq2 import DESeq2
 from .tools import get_files
 from .heatmap import Heatmap
 from .template import Processor
+from .batch_correction import BatchCorrection
 
 
 class RNASeqAnalysis(Processor):
@@ -22,6 +23,7 @@ class RNASeqAnalysis(Processor):
     sample_group_column: str
     control_group_name: str
     experimental_group_name: str
+    sample_batch_column: Optional[str]
     skip_deseq2_gsea: bool
     gsea_input: str
 
@@ -44,6 +46,7 @@ class RNASeqAnalysis(Processor):
             sample_group_column: str,
             control_group_name: str,
             experimental_group_name: str,
+            sample_batch_column: Optional[str],
             skip_deseq2_gsea: bool,
             gsea_input: str):
 
@@ -57,15 +60,17 @@ class RNASeqAnalysis(Processor):
         self.sample_group_column = sample_group_column
         self.control_group_name = control_group_name
         self.experimental_group_name = experimental_group_name
+        self.sample_batch_column = sample_batch_column
         self.skip_deseq2_gsea = skip_deseq2_gsea
         self.gsea_input = gsea_input
 
         self.read_tables()
+        self.batch_correction()
         self.tpm()
         self.deseq2()
         self.heatmap()
-        self.gsea()
         self.pca()
+        self.gsea()
         self.clean_up()
 
     def read_tables(self):
@@ -75,6 +80,13 @@ class RNASeqAnalysis(Processor):
 
         for df in [self.count_df, self.sample_info_df, self.gene_info_df]:
             df.index.name = None  # make all final output files clean without index names
+
+    def batch_correction(self):
+        if self.sample_batch_column is not None:
+            self.count_df = BatchCorrection(self.settings).main(
+                count_df=self.count_df,
+                sample_info_df=self.sample_info_df,
+                sample_batch_column=self.sample_batch_column)
 
     def __read(self, file: str) -> pd.DataFrame:
         sep = ','
@@ -95,8 +107,8 @@ class RNASeqAnalysis(Processor):
             self.deseq2_normalized_count_df = None
         else:
             self.deseq2_normalized_count_df = DESeq2(self.settings).main(
-                count_table=self.count_table,
-                sample_info_table=self.sample_info_table,
+                count_df=self.count_df,
+                sample_info_df=self.sample_info_df,
                 sample_group_column=self.sample_group_column,
                 control_group_name=self.control_group_name,
                 experimental_group_name=self.experimental_group_name,
@@ -136,19 +148,21 @@ class RNASeqAnalysis(Processor):
 class CleanUp(Processor):
 
     def main(self):
-        self.collect_log_files()
+        self.collect_files(file_ext='R', dstdir_name='r-scripts')
+        self.collect_files(file_ext='log', dstdir_name='log')
         self.remove_workdir()
 
-    def collect_log_files(self):
-        log_files = get_files(
+    def collect_files(self, file_ext: str, dstdir_name: str):
+        files = get_files(
             source=self.outdir,
-            endswith='.log')
+            endswith=file_ext)
 
-        if len(log_files) == 0:
+        if len(files) == 0:
             return
 
-        os.makedirs(f'{self.outdir}/log', exist_ok=True)
-        cmd = f'mv {self.outdir}/*.log {self.outdir}/log/'
+        d = os.path.join(self.outdir, dstdir_name)
+        os.makedirs(d, exist_ok=True)
+        cmd = f'mv {self.outdir}/*.{file_ext} {d}/'
         self.call(cmd)
 
     def remove_workdir(self):

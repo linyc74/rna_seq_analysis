@@ -44,6 +44,9 @@ BiocManager::install(version="3.16")
 
 # use bioconductor to install deseq2
 BiocManager::install("DESeq2")
+
+# ComBat-seq
+BiocManager::install("sva")
 ```
 
 ## Troubleshoot

@@ -15,6 +15,7 @@ def main(
         sample_group_column: str,
         control_group_name: str,
         experimental_group_name: str,
+        sample_batch_column: str,
         skip_deseq2_gsea: bool,
         gsea_input: str,
         threads: int,
@@ -42,5 +43,6 @@ def main(
         sample_group_column=sample_group_column,
         control_group_name=control_group_name,
         experimental_group_name=experimental_group_name,
+        sample_batch_column=None if sample_batch_column.lower() == 'none' else sample_batch_column,
         skip_deseq2_gsea=skip_deseq2_gsea,
         gsea_input=gsea_input)

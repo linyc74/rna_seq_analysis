@@ -1,16 +1,20 @@
 import pandas as pd
 from .template import Processor
+from .tools import get_temp_path
 
 
 class DESeq2(Processor):
 
-    count_table: str
-    sample_info_table: str
+    count_df: pd.DataFrame
+    sample_info_df: pd.DataFrame
     sample_group_column: str
     control_group_name: str
     experimental_group_name: str
     gene_info_df: pd.DataFrame
     gene_name_column: str
+
+    count_csv: str
+    sample_info_csv: str
 
     r_script: str
     statistics_csv: str
@@ -20,16 +24,16 @@ class DESeq2(Processor):
 
     def main(
             self,
-            count_table: str,
-            sample_info_table: str,
+            count_df: pd.DataFrame,
+            sample_info_df: pd.DataFrame,
             sample_group_column: str,
             control_group_name: str,
             experimental_group_name: str,
             gene_info_df: pd.DataFrame,
             gene_name_column: str) -> pd.DataFrame:
 
-        self.count_table = count_table
-        self.sample_info_table = sample_info_table
+        self.count_df = count_df
+        self.sample_info_df = sample_info_df
         self.sample_group_column = sample_group_column
         self.control_group_name = control_group_name
         self.experimental_group_name = experimental_group_name
@@ -37,6 +41,7 @@ class DESeq2(Processor):
         self.gene_name_column = gene_name_column
 
         self.check_group_name()
+        self.write_input_csvs()
         self.set_output_csvs()
         self.set_r_script()
         self.run_r_script()
@@ -47,42 +52,43 @@ class DESeq2(Processor):
         return self.normalized_count_df
 
     def check_group_name(self):
-        fpath = self.sample_info_table
-
-        df = pd.read_csv(
-            fpath,
-            sep=',' if fpath.endswith('.csv') else '\\t',
-            index_col=0
-        )
-
-        valid_group_names = set(df[self.sample_group_column])
+        valid_group_names = set(self.sample_info_df[self.sample_group_column])
         for name in [self.control_group_name, self.experimental_group_name]:
             if name not in valid_group_names:
-                msg = f'"{name}" does not exists in the "{self.sample_group_column}" column of "{self.sample_info_table}"'
+                msg = f'"{name}" does not exists in the "{self.sample_group_column}" column of the sample info table'
                 raise AssertionError(msg)
+
+    def write_input_csvs(self):
+        self.count_csv = get_temp_path(
+            prefix=f'{self.workdir}/deseq2-count-',
+            suffix='.csv')
+        self.sample_info_csv = get_temp_path(
+            prefix=f'{self.workdir}/deseq2-sample-info-',
+            suffix='.csv')
+
+        self.count_df.to_csv(self.count_csv, index=True)
+        self.sample_info_df.to_csv(self.sample_info_csv, index=True)
 
     def set_output_csvs(self):
         self.statistics_csv = f'{self.outdir}/deseq2-statistics.csv'
         self.normalized_count_csv = f'{self.outdir}/deseq2-normalized-count.csv'
 
     def set_r_script(self):
-        sep1 = ',' if self.count_table.endswith('.csv') else '\\t'
-        sep2 = ',' if self.sample_info_table.endswith('.csv') else '\\t'
         self.r_script = f'''\
 library(DESeq2)
 
 count_df <- read.table(
-    file='{self.count_table}',
+    file='{self.count_csv}',
     header=TRUE,
-    sep='{sep1}',
+    sep=',',
     row.names=1,
     check.names=FALSE
 )
 
 sample_sheet_df <- read.table(
-    file='{self.sample_info_table}',
+    file='{self.sample_info_csv}',
     header=TRUE,
-    sep='{sep2}',
+    sep=',',
     row.names=1,
     check.names=FALSE
 )

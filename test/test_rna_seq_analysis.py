@@ -22,6 +22,7 @@ class TestRNASeqAnalysis(TestCase):
             sample_group_column='group',
             control_group_name='normal',
             experimental_group_name='cancer',
+            sample_batch_column='batch',
             skip_deseq2_gsea=False,
             gsea_input='deseq2',
         )
