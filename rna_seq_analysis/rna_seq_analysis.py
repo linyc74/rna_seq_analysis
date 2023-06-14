@@ -81,13 +81,6 @@ class RNASeqAnalysis(Processor):
         for df in [self.count_df, self.sample_info_df, self.gene_info_df]:
             df.index.name = None  # make all final output files clean without index names
 
-    def batch_correction(self):
-        if self.sample_batch_column is not None:
-            self.count_df = BatchCorrection(self.settings).main(
-                count_df=self.count_df,
-                sample_info_df=self.sample_info_df,
-                sample_batch_column=self.sample_batch_column)
-
     def __read(self, file: str) -> pd.DataFrame:
         sep = ','
         for ext in ['.tsv', '.txt', '.tab']:
@@ -95,6 +88,13 @@ class RNASeqAnalysis(Processor):
                 sep = '\t'
                 break
         return pd.read_csv(file, sep=sep, index_col=0)
+
+    def batch_correction(self):
+        if self.sample_batch_column is not None:
+            self.count_df = BatchCorrection(self.settings).main(
+                count_df=self.count_df,
+                sample_info_df=self.sample_info_df,
+                sample_batch_column=self.sample_batch_column)
 
     def tpm(self):
         self.tpm_df = TPM(self.settings).main(
