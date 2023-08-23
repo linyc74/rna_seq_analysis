@@ -20,6 +20,7 @@ class TestDESeq2(TestCase):
             experimental_group_name='cancer',
             gene_info_df=pd.read_csv(f'{self.indir}/gene_info_df.csv', index_col=0),
             gene_name_column='gene_name',
+            gene_description_column='gene_description',
         )
 
     def test_invalid_group_name(self):
@@ -33,4 +34,5 @@ class TestDESeq2(TestCase):
                 experimental_group_name=invalid_group_name,
                 gene_info_df=pd.read_csv(f'{self.indir}/gene_info_df.csv', index_col=0),
                 gene_name_column='gene_name',
+                gene_description_column=None,
             )

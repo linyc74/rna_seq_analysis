@@ -1,4 +1,5 @@
 import pandas as pd
+from typing import Optional
 from .template import Processor
 from .tools import get_temp_path
 
@@ -12,6 +13,7 @@ class DESeq2(Processor):
     experimental_group_name: str
     gene_info_df: pd.DataFrame
     gene_name_column: str
+    gene_description_column: Optional[str]
 
     count_csv: str
     sample_info_csv: str
@@ -30,7 +32,8 @@ class DESeq2(Processor):
             control_group_name: str,
             experimental_group_name: str,
             gene_info_df: pd.DataFrame,
-            gene_name_column: str) -> pd.DataFrame:
+            gene_name_column: str,
+            gene_description_column: Optional[str]) -> pd.DataFrame:
 
         self.count_df = count_df
         self.sample_info_df = sample_info_df
@@ -39,6 +42,7 @@ class DESeq2(Processor):
         self.experimental_group_name = experimental_group_name
         self.gene_info_df = gene_info_df
         self.gene_name_column = gene_name_column
+        self.gene_description_column = gene_description_column
 
         self.check_group_name()
         self.write_input_csvs()
@@ -46,7 +50,7 @@ class DESeq2(Processor):
         self.set_r_script()
         self.run_r_script()
         self.read_deseq2_output_csvs()
-        self.add_gene_name_to_statistics_df()
+        self.add_gene_name_and_description_to_statistics_df()
         self.rewrite_output_csvs()
 
         return self.normalized_count_df
@@ -148,20 +152,21 @@ write.csv(
         self.statistics_df = pd.read_csv(self.statistics_csv, index_col=0)
         self.normalized_count_df = pd.read_csv(self.normalized_count_csv, index_col=0)
 
-    def add_gene_name_to_statistics_df(self):
-        df = self.statistics_df
+    def add_gene_name_and_description_to_statistics_df(self):
+        cols = [self.gene_name_column]
+        if self.gene_description_column is not None:
+            cols.append(self.gene_description_column)
 
-        n = len(df)
-        df = df.merge(
-            right=self.gene_info_df[[self.gene_name_column]],
-            right_index=True,
-            left_index=True,
-            how='left'
+        df = left_join(
+            left=self.statistics_df,
+            right=self.gene_info_df[cols]
         )
-        assert len(df) == n
 
         columns = df.columns.tolist()
-        reordered = columns[-1:] + columns[0:-1]
+        if self.gene_description_column is not None:
+            reordered = columns[-2:] + columns[:-2]
+        else:
+            reordered = columns[-1:] + columns[:-1]
         df = df[reordered]
 
         self.statistics_df = df
@@ -169,3 +174,15 @@ write.csv(
     def rewrite_output_csvs(self):
         self.statistics_df.to_csv(self.statistics_csv, index=True)
         self.normalized_count_df.to_csv(self.normalized_count_csv, index=True)
+
+
+def left_join(left: pd.DataFrame, right: pd.DataFrame) -> pd.DataFrame:
+    n = len(left)
+    merged = left.merge(
+        right=right,
+        right_index=True,
+        left_index=True,
+        how='left'
+    )
+    assert len(merged) == n
+    return merged

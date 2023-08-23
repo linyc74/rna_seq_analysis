@@ -2,7 +2,7 @@ import argparse
 import rna_seq_analysis
 
 
-__VERSION__ = '1.0.6'
+__VERSION__ = '1.0.7-beta'
 
 
 PROG = 'python rna_seq_analysis'
@@ -62,6 +62,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--gene-description-column'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'gene description column in the gene-info-table, if None then no description will be used (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--heatmap-read-fraction'],
         'properties': {
             'type': float,
@@ -102,8 +111,8 @@ OPTIONAL = [
         'properties': {
             'type': str,
             'required': False,
-            'default': 'batch',
-            'help': 'sample batch column in the sample-info-table (default: %(default)s)',
+            'default': 'None',
+            'help': 'sample batch column in the sample-info-table, if None then skip batch correction (default: %(default)s)',
         }
     },
     {
@@ -203,6 +212,7 @@ class EntryPoint:
             gene_sets_gmt=args.gene_sets_gmt,
             gene_length_column=args.gene_length_column,
             gene_name_column=args.gene_name_column,
+            gene_description_column=args.gene_description_column,
             heatmap_read_fraction=args.heatmap_read_fraction,
             sample_group_column=args.sample_group_column,
             control_group_name=args.control_group_name,

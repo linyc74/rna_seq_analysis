@@ -19,6 +19,7 @@ class RNASeqAnalysis(Processor):
     gene_sets_gmt: Optional[str]
     gene_length_column: str
     gene_name_column: str
+    gene_description_column: Optional[str]
     heatmap_read_fraction: float
     sample_group_column: str
     control_group_name: str
@@ -42,6 +43,7 @@ class RNASeqAnalysis(Processor):
             gene_sets_gmt: Optional[str],
             gene_length_column: str,
             gene_name_column: str,
+            gene_description_column: Optional[str],
             heatmap_read_fraction: float,
             sample_group_column: str,
             control_group_name: str,
@@ -56,6 +58,7 @@ class RNASeqAnalysis(Processor):
         self.gene_sets_gmt = gene_sets_gmt
         self.gene_length_column = gene_length_column
         self.gene_name_column = gene_name_column
+        self.gene_description_column = gene_description_column
         self.heatmap_read_fraction = heatmap_read_fraction
         self.sample_group_column = sample_group_column
         self.control_group_name = control_group_name
@@ -113,7 +116,8 @@ class RNASeqAnalysis(Processor):
                 control_group_name=self.control_group_name,
                 experimental_group_name=self.experimental_group_name,
                 gene_info_df=self.gene_info_df,
-                gene_name_column=self.gene_name_column)
+                gene_name_column=self.gene_name_column,
+                gene_description_column=self.gene_description_column)
 
     def heatmap(self):
         Heatmap(self.settings).main(
