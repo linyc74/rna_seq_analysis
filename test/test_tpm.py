@@ -13,8 +13,8 @@ class TestTPM(TestCase):
 
     def test_main(self):
         actual = TPM(self.settings).main(
-            count_df=pd.read_csv(f'{self.indir}/count-table.csv', index_col=0),
-            gene_info_df=pd.read_csv(f'{self.indir}/gene-info-table.csv', index_col=0),
+            count_df=pd.read_csv(f'{self.indir}/count_df.csv', index_col=0),
+            gene_info_df=pd.read_csv(f'{self.indir}/gene_info_df.csv', index_col=0),
             gene_length_column='Gene Length'
         )
         expected = pd.read_csv(f'{self.indir}/tpm.csv', index_col=0)

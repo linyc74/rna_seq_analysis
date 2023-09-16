@@ -16,7 +16,7 @@ class TestGSEA(TestCase):
         count_df = pd.read_csv(f'{self.indir}/deseq2_normalized_count.csv', index_col=0)
         gene_info_df = pd.read_csv(f'{self.indir}/22_1209_randomize_rna_seq_data_gene_info.csv', index_col=0)
         sample_info_df = pd.read_csv(f'{self.indir}/22_1209_randomize_rna_seq_data_sample_info.csv', index_col=0)
-        gene_sets_gmt = f'{self.indir}/h.all.v2022.1.Hs.symbols.gmt'
+        gene_sets_gmt = f'{self.indir}/h.all.v2023.1.Hs.symbols.gmt'
 
         GSEA(self.settings).main(
             count_df=count_df,
