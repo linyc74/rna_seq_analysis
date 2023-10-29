@@ -51,6 +51,7 @@ class DESeq2(Processor):
         self.run_r_script()
         self.read_deseq2_output_csvs()
         self.add_gene_name_and_description_to_statistics_df()
+        self.sort_statistics_df()
         self.rewrite_output_csvs()
 
         return self.normalized_count_df
@@ -170,6 +171,12 @@ write.csv(
         df = df[reordered]
 
         self.statistics_df = df
+
+    def sort_statistics_df(self):
+        self.statistics_df = self.statistics_df.sort_values(
+            by=['padj', 'pvalue'],
+            ascending=[True, True]
+        )
 
     def rewrite_output_csvs(self):
         self.statistics_df.to_csv(self.statistics_csv, index=True)
