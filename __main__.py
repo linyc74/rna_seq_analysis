@@ -2,7 +2,7 @@ import argparse
 import rna_seq_analysis
 
 
-__VERSION__ = '1.0.8-beta'
+__VERSION__ = '1.0.8'
 
 
 PROG = 'python rna_seq_analysis'
