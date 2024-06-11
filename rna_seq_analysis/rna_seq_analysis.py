@@ -8,6 +8,7 @@ from .deseq2 import DESeq2
 from .tools import get_files
 from .heatmap import Heatmap
 from .template import Processor
+from .subset_samples import SubsetSamples
 from .batch_correction import BatchCorrection
 
 
@@ -68,6 +69,7 @@ class RNASeqAnalysis(Processor):
         self.gsea_input = gsea_input
 
         self.read_tables()
+        self.subset_samples()
         self.batch_correction()
         self.tpm()
         self.deseq2()
@@ -77,20 +79,17 @@ class RNASeqAnalysis(Processor):
         self.clean_up()
 
     def read_tables(self):
-        self.count_df = self.__read(self.count_table)
-        self.sample_info_df = self.__read(self.sample_info_table)
-        self.gene_info_df = self.__read(self.gene_info_table)
+        self.count_df = read(self.count_table)
+        self.sample_info_df = read(self.sample_info_table)
+        self.gene_info_df = read(self.gene_info_table)
 
         for df in [self.count_df, self.sample_info_df, self.gene_info_df]:
             df.index.name = None  # make all final output files clean without index names
 
-    def __read(self, file: str) -> pd.DataFrame:
-        sep = ','
-        for ext in ['.tsv', '.txt', '.tab']:
-            if file.endswith(ext):
-                sep = '\t'
-                break
-        return pd.read_csv(file, sep=sep, index_col=0)
+    def subset_samples(self):
+        self.count_df = SubsetSamples(self.settings).main(
+            count_df=self.count_df,
+            sample_info_df=self.sample_info_df)
 
     def batch_correction(self):
         if self.sample_batch_column is not None:
@@ -172,3 +171,12 @@ class CleanUp(Processor):
     def remove_workdir(self):
         if not self.debug:
             self.call(f'rm -r {self.workdir}')
+
+
+def read(file: str) -> pd.DataFrame:
+    sep = ','
+    for ext in ['.tsv', '.txt', '.tab']:
+        if file.endswith(ext):
+            sep = '\t'
+            break
+    return pd.read_csv(file, sep=sep, index_col=0)
