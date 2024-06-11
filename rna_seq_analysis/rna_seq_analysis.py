@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from typing import Optional
+from typing import Optional, List
 from .tpm import TPM
 from .pca import PCA
 from .gsea import GSEA
@@ -28,6 +28,8 @@ class RNASeqAnalysis(Processor):
     sample_batch_column: Optional[str]
     skip_deseq2_gsea: bool
     gsea_input: str
+    gsea_gene_name_keywords: Optional[List[str]]
+    gsea_gene_set_name_keywords: Optional[List[str]]
 
     count_df: pd.DataFrame
     sample_info_df: pd.DataFrame
@@ -51,7 +53,9 @@ class RNASeqAnalysis(Processor):
             experimental_group_name: str,
             sample_batch_column: Optional[str],
             skip_deseq2_gsea: bool,
-            gsea_input: str):
+            gsea_input: str,
+            gsea_gene_name_keywords: Optional[List[str]],
+            gsea_gene_set_name_keywords: Optional[List[str]]):
 
         self.count_table = count_table
         self.sample_info_table = sample_info_table
@@ -67,6 +71,8 @@ class RNASeqAnalysis(Processor):
         self.sample_batch_column = sample_batch_column
         self.skip_deseq2_gsea = skip_deseq2_gsea
         self.gsea_input = gsea_input
+        self.gsea_gene_name_keywords = gsea_gene_name_keywords
+        self.gsea_gene_set_name_keywords = gsea_gene_set_name_keywords
 
         self.read_tables()
         self.subset_samples()
@@ -135,7 +141,9 @@ class RNASeqAnalysis(Processor):
             sample_group_column=self.sample_group_column,
             control_group_name=self.control_group_name,
             experimental_group_name=self.experimental_group_name,
-            gene_sets_gmt=self.gene_sets_gmt)
+            gene_sets_gmt=self.gene_sets_gmt,
+            gene_name_keywords=self.gsea_gene_name_keywords,
+            gene_set_name_keywords=self.gsea_gene_set_name_keywords)
 
     def pca(self):
         PCA(self.settings).main(

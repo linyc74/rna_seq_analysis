@@ -129,7 +129,25 @@ OPTIONAL = [
             'required': False,
             'choices': ['deseq2', 'tpm'],
             'default': 'deseq2',
-            'help': 'choice of gsea input count table (default: %(default)s)',
+            'help': 'choice of GSEA input count table (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--gsea-gene-name-keywords'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'comma-separated gene-name keywords for gene-set pre-filtering before GSEA (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--gsea-gene-set-name-keywords'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'comma-separated gene-set-name keywords for gene-set pre-filtering before GSEA (default: %(default)s)',
         }
     },
     {
@@ -220,6 +238,8 @@ class EntryPoint:
             sample_batch_column=args.sample_batch_column,
             skip_deseq2_gsea=args.skip_deseq2_gsea,
             gsea_input=args.gsea_input,
+            gsea_gene_name_keywords=args.gsea_gene_name_keywords,
+            gsea_gene_set_name_keywords=args.gsea_gene_set_name_keywords,
             threads=args.threads,
             debug=args.debug,
             outdir=args.outdir)

@@ -1,8 +1,11 @@
 import os
 import pandas as pd
-from os.path import abspath
-from typing import List, Any
+from os.path import abspath, basename
+from typing import List, Any, Optional
 from .template import Processor
+
+
+GSEA_OUTDIR_NAME = 'gsea'
 
 
 class GSEA(Processor):
@@ -15,6 +18,8 @@ class GSEA(Processor):
     control_group_name: str
     experimental_group_name: str
     gene_sets_gmt: str
+    gene_name_keywords: Optional[List[str]]
+    gene_set_name_keywords: Optional[List[str]]
 
     expression_txt: str
     groups_cls: str
@@ -28,7 +33,9 @@ class GSEA(Processor):
             sample_group_column: str,
             control_group_name: str,
             experimental_group_name: str,
-            gene_sets_gmt: str):
+            gene_sets_gmt: str,
+            gene_name_keywords: Optional[List[str]],
+            gene_set_name_keywords: Optional[List[str]]):
 
         self.count_df = count_df
         self.gene_info_df = gene_info_df
@@ -38,9 +45,12 @@ class GSEA(Processor):
         self.control_group_name = control_group_name
         self.experimental_group_name = experimental_group_name
         self.gene_sets_gmt = gene_sets_gmt
+        self.gene_name_keywords = gene_name_keywords
+        self.gene_set_name_keywords = gene_set_name_keywords
 
         self.build_expression_txt()
         self.build_groups_cls()
+        self.filter_gene_sets()
         self.run_gsea()
 
     def build_expression_txt(self):
@@ -57,15 +67,25 @@ class GSEA(Processor):
             control_group_name=self.control_group_name,
             experimental_group_name=self.experimental_group_name)
 
+    def filter_gene_sets(self):
+        self.gene_sets_gmt = FilterGeneSets(self.settings).main(
+            gene_sets_gmt=self.gene_sets_gmt,
+            gene_name_keywords=self.gene_name_keywords,
+            gene_set_name_keywords=self.gene_set_name_keywords)
+
     def run_gsea(self):
+        with open(self.gene_sets_gmt) as f:
+            if f.read().strip() == '':
+                self.logger.info(f'"{self.gene_sets_gmt}" is empty. Skip running GSEA.')
+                return
+
         RunGSEA(self.settings).main(
             expression_txt=self.expression_txt,
             groups_cls=self.groups_cls,
             gene_sets_gmt=self.gene_sets_gmt,
             control_group_name=self.control_group_name,
             experimental_group_name=self.experimental_group_name,
-            out_dirname='gsea'
-        )
+            out_dirname=GSEA_OUTDIR_NAME)
 
 
 class BuildExpressionTxt(Processor):
@@ -188,6 +208,61 @@ def unique(lst: List[Any]) -> List[Any]:
         if item not in ret:
             ret.append(item)
     return ret
+
+
+class FilterGeneSets(Processor):
+
+    gene_sets_gmt: str
+    gene_name_keywords: List[str]
+    gene_set_name_keywords: List[str]
+
+    filtered_gmt: str
+
+    def main(
+            self,
+            gene_sets_gmt: str,
+            gene_name_keywords: Optional[List[str]],
+            gene_set_name_keywords: Optional[List[str]]) -> str:
+
+        self.gene_sets_gmt = gene_sets_gmt
+        self.gene_name_keywords = gene_name_keywords
+        self.gene_set_name_keywords = gene_set_name_keywords
+
+        self.set_filtered_gmt()
+
+        if self.gene_name_keywords is None and self.gene_set_name_keywords is None:
+            self.logger.info('No keywords are given for filtering gene sets. Skip pre-filtering.')
+            return self.gene_sets_gmt
+
+        with open(self.gene_sets_gmt) as reader:
+            with open(self.filtered_gmt, 'w') as writer:
+                for line in reader:
+                    if self.is_line_to_be_included(line=line):
+                        writer.write(line)
+
+        return self.filtered_gmt
+
+    def set_filtered_gmt(self):
+        d = f'{self.outdir}/{GSEA_OUTDIR_NAME}'
+        self.call(f'mkdir -p {d}')
+        self.filtered_gmt = f'{d}/pre-filtered-{basename(self.gene_sets_gmt)}'
+
+    def is_line_to_be_included(self, line: str) -> bool:
+        gene_set_name = line.split('\t')[0]
+        gene_names = line.split('\t')[2:]
+
+        if self.gene_set_name_keywords is not None:
+            for w in self.gene_set_name_keywords:
+                if w.lower() in gene_set_name.lower():
+                    return True
+
+        if self.gene_name_keywords is not None:
+            for w in self.gene_name_keywords:
+                for gene_name in gene_names:
+                    if w.lower() in gene_name.lower():
+                        return True
+
+        return False
 
 
 class RunGSEA(Processor):
