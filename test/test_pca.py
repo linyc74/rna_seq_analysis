@@ -23,7 +23,7 @@ class TestPCA(TestCase):
             tpm_df=tpm_df,
             deseq2_normalized_count_df=deseq2_normalized_count_df,
             sample_info_df=sample_info_df,
-            sample_group_column=sample_group_column
+            sample_group_column=sample_group_column,
         )
 
         for filename in [

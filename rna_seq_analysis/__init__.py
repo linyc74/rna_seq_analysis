@@ -21,6 +21,7 @@ def main(
         gsea_input: str,
         gsea_gene_name_keywords: str,
         gsea_gene_set_name_keywords: str,
+        publication_figure: bool,
         threads: int,
         debug: bool,
         outdir: str):
@@ -30,7 +31,8 @@ def main(
         outdir=outdir,
         threads=int(threads),
         debug=debug,
-        mock=False)
+        mock=False,
+        for_publication=publication_figure)
 
     for d in [settings.workdir, settings.outdir]:
         os.makedirs(d, exist_ok=True)

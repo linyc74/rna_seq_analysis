@@ -102,6 +102,8 @@ class OnePCA(Processor):
             x_column=self.XY_COLUMNS[0],
             y_column=self.XY_COLUMNS[1],
             hue_column=self.sample_group_column,
+            x_label_suffix=f' ({self.proportion_explained_series[0]*100:.2f}%)',
+            y_label_suffix=f' ({self.proportion_explained_series[1]*100:.2f}%)',
             fname=f'{self.fname}-sample-coordinate'
         )
 
@@ -166,9 +168,6 @@ class ComputePCA(Processor):
 
 class ScatterPlot(Processor):
 
-    FIGSIZE = (8, 8)
-    DPI = 600
-
     sample_coordinate_df: pd.DataFrame
     x_column: str
     y_column: str
@@ -183,21 +182,49 @@ class ScatterPlot(Processor):
             x_column: str,
             y_column: str,
             hue_column: str,
+            x_label_suffix: str,
+            y_label_suffix: str,
             fname: str):
 
         self.sample_coordinate_df = sample_coordinate_df
         self.x_column = x_column
         self.y_column = y_column
         self.group_column = hue_column
+        self.x_label_suffix = x_label_suffix
+        self.y_label_suffix = y_label_suffix
         self.fname = fname
 
+        self.set_figsize()
+        self.set_parameters()
         self.init_figure()
         self.scatterplot()
         self.label_points()
         self.save_figure()
 
+    def set_figsize(self):
+        df, group = self.sample_coordinate_df, self.group_column
+        max_legend_chrs = get_max_str_length(df[group])
+        n_groups = len(df[group].unique())
+
+        self.figsize = GetFigsize(self.settings).main(
+            max_legend_chrs=max_legend_chrs, n_groups=n_groups)
+
+    def set_parameters(self):
+        if self.settings.for_publication:
+            self.point_size = 20.
+            self.marker_edge_color = 'white'
+            self.line_width = 0.5
+            self.fontsize = 7
+            self.dpi = 600
+        else:
+            self.point_size = 30.
+            self.marker_edge_color = 'white'
+            self.line_width = 1.0
+            self.fontsize = 10
+            self.dpi = 300
+
     def init_figure(self):
-        plt.figure(figsize=self.FIGSIZE, dpi=self.DPI)
+        plt.figure(figsize=self.figsize, dpi=self.dpi)
 
     def scatterplot(self):
         self.ax = sns.scatterplot(
@@ -205,8 +232,17 @@ class ScatterPlot(Processor):
             x=self.x_column,
             y=self.y_column,
             hue=self.group_column)
+        plt.gca().xaxis.set_tick_params(width=self.line_width)
+        plt.gca().yaxis.set_tick_params(width=self.line_width)
+        plt.ticklabel_format(axis='both', style='sci', scilimits=(0, 0))  # scientific notation, single digit tick labels to avoid squeezing the rectangle
+        plt.xlabel(f'{self.x_column}{self.x_label_suffix}')
+        plt.ylabel(f'{self.y_column}{self.y_label_suffix}')
+        legend = plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+        legend.set_frame_on(False)
 
     def label_points(self):
+        if self.settings.for_publication:
+            return
         df = self.sample_coordinate_df
         for sample_name in df.index:
             self.ax.text(
@@ -216,6 +252,32 @@ class ScatterPlot(Processor):
             )
 
     def save_figure(self):
+        plt.tight_layout()
         for ext in ['pdf', 'png']:
-            plt.savefig(f'{self.outdir}/{DSTDIR_NAME}/{self.fname}.{ext}', dpi=self.DPI)
+            plt.savefig(f'{self.outdir}/{DSTDIR_NAME}/{self.fname}.{ext}', dpi=self.dpi)
         plt.close()
+
+
+def get_max_str_length(series: pd.Series) -> int:
+    return series.astype(str).apply(len).max()
+
+
+class GetFigsize(Processor):
+
+    def main(self, max_legend_chrs: int, n_groups: int) -> Tuple[float, float]:
+
+        if self.settings.for_publication:
+            base_width = 7.6 / 2.54
+            chr_width = 0.15 / 2.54
+            base_height = 6 / 2.54
+            line_height = 0.4 / 2.54
+        else:
+            base_width = 14 / 2.54
+            chr_width = 0.218 / 2.54
+            base_height = 12 / 2.54
+            line_height = 0.5 / 2.54
+
+        w = base_width + (max_legend_chrs * chr_width)
+        h = max(base_height, n_groups * line_height)
+
+        return w, h

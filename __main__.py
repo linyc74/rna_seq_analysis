@@ -151,6 +151,13 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--publication-figure'],
+        'properties': {
+            'action': 'store_true',
+            'help': 'plot figures in the form and quality for paper publication',
+        }
+    },
+    {
         'keys': ['-o', '--outdir'],
         'properties': {
             'type': str,
@@ -240,6 +247,7 @@ class EntryPoint:
             gsea_input=args.gsea_input,
             gsea_gene_name_keywords=args.gsea_gene_name_keywords,
             gsea_gene_set_name_keywords=args.gsea_gene_set_name_keywords,
+            publication_figure=args.publication_figure,
             threads=args.threads,
             debug=args.debug,
             outdir=args.outdir)
