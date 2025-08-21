@@ -21,6 +21,8 @@ def main(
         gsea_input: str,
         gsea_gene_name_keywords: str,
         gsea_gene_set_name_keywords: str,
+        colormap: str,
+        invert_colors: bool,
         publication_figure: bool,
         threads: int,
         debug: bool,
@@ -53,5 +55,7 @@ def main(
         skip_deseq2_gsea=skip_deseq2_gsea,
         gsea_input=gsea_input,
         gsea_gene_name_keywords=None if gsea_gene_name_keywords.lower() == 'none' else gsea_gene_name_keywords.split(','),
-        gsea_gene_set_name_keywords=None if gsea_gene_set_name_keywords.lower() == 'none' else gsea_gene_set_name_keywords.split(',')
+        gsea_gene_set_name_keywords=None if gsea_gene_set_name_keywords.lower() == 'none' else gsea_gene_set_name_keywords.split(','),
+        colormap=colormap,
+        invert_colors=invert_colors
     )

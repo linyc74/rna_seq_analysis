@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 from matplotlib.axes import Axes
 from sklearn import decomposition
 from .template import Processor
@@ -17,23 +17,27 @@ class PCA(Processor):
     deseq2_normalized_count_df: Optional[pd.DataFrame]
     sample_info_df: pd.DataFrame
     sample_group_column: str
+    colors: List[Tuple[float, float, float, float]]
 
     def main(
             self,
             tpm_df: pd.DataFrame,
             deseq2_normalized_count_df: Optional[pd.DataFrame],
             sample_info_df: pd.DataFrame,
-            sample_group_column: str):
+            sample_group_column: str,
+            colors: List[Tuple[float, float, float, float]]):
 
         self.tpm_df = tpm_df
         self.deseq2_normalized_count_df = deseq2_normalized_count_df
         self.sample_info_df = sample_info_df
         self.sample_group_column = sample_group_column
+        self.colors = colors
 
         OnePCA(self.settings).main(
             feature_by_sample_df=self.tpm_df,
             sample_info_df=self.sample_info_df,
             sample_group_column=self.sample_group_column,
+            colors=self.colors,
             fname='pca-tpm'
         )
         if self.deseq2_normalized_count_df is not None:
@@ -41,6 +45,7 @@ class PCA(Processor):
                 feature_by_sample_df=self.deseq2_normalized_count_df,
                 sample_info_df=self.sample_info_df,
                 sample_group_column=self.sample_group_column,
+                colors=self.colors,
                 fname='pca-deseq2'
             )
 
@@ -52,6 +57,7 @@ class OnePCA(Processor):
     feature_by_sample_df: pd.DataFrame  # row features x column samples
     sample_info_df: pd.DataFrame
     sample_group_column: str
+    colors: List[Tuple[float, float, float, float]]
     fname: str
 
     sample_coordinate_df: pd.DataFrame
@@ -62,11 +68,13 @@ class OnePCA(Processor):
             feature_by_sample_df: pd.DataFrame,
             sample_info_df: pd.DataFrame,
             sample_group_column: str,
+            colors: List[Tuple[float, float, float, float]],
             fname: str):
 
         self.feature_by_sample_df = feature_by_sample_df
         self.sample_info_df = sample_info_df
         self.sample_group_column = sample_group_column
+        self.colors = colors
         self.fname = fname
 
         self.compute_pca()
@@ -104,6 +112,7 @@ class OnePCA(Processor):
             hue_column=self.sample_group_column,
             x_label_suffix=f' ({self.proportion_explained_series[0]*100:.2f}%)',
             y_label_suffix=f' ({self.proportion_explained_series[1]*100:.2f}%)',
+            colors=self.colors,
             fname=f'{self.fname}-sample-coordinate'
         )
 
@@ -172,6 +181,7 @@ class ScatterPlot(Processor):
     x_column: str
     y_column: str
     group_column: str
+    colors: List[Tuple[float, float, float, float]]
     fname: str
 
     ax: Axes
@@ -184,6 +194,7 @@ class ScatterPlot(Processor):
             hue_column: str,
             x_label_suffix: str,
             y_label_suffix: str,
+            colors: List[Tuple[float, float, float, float]],
             fname: str):
 
         self.sample_coordinate_df = sample_coordinate_df
@@ -192,6 +203,7 @@ class ScatterPlot(Processor):
         self.group_column = hue_column
         self.x_label_suffix = x_label_suffix
         self.y_label_suffix = y_label_suffix
+        self.colors = colors
         self.fname = fname
 
         self.set_figsize()
@@ -231,7 +243,8 @@ class ScatterPlot(Processor):
             data=self.sample_coordinate_df,
             x=self.x_column,
             y=self.y_column,
-            hue=self.group_column)
+            hue=self.group_column,
+            palette=self.colors)
         plt.gca().xaxis.set_tick_params(width=self.line_width)
         plt.gca().yaxis.set_tick_params(width=self.line_width)
         plt.ticklabel_format(axis='both', style='sci', scilimits=(0, 0))  # scientific notation, single digit tick labels to avoid squeezing the rectangle

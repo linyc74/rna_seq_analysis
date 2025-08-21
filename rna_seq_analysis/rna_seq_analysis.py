@@ -1,6 +1,8 @@
 import os
 import pandas as pd
-from typing import Optional, List
+import matplotlib.pyplot as plt
+from matplotlib.colors import to_rgba
+from typing import Optional, List, Tuple
 from .tpm import TPM
 from .pca import PCA
 from .gsea import GSEA
@@ -30,10 +32,13 @@ class RNASeqAnalysis(Processor):
     gsea_input: str
     gsea_gene_name_keywords: Optional[List[str]]
     gsea_gene_set_name_keywords: Optional[List[str]]
+    colormap: str
+    invert_colors: bool
 
     count_df: pd.DataFrame
     sample_info_df: pd.DataFrame
     gene_info_df: pd.DataFrame
+    colors: List[Tuple[float, float, float, float]]
 
     tpm_df: pd.DataFrame
     deseq2_normalized_count_df: Optional[pd.DataFrame]
@@ -55,7 +60,9 @@ class RNASeqAnalysis(Processor):
             skip_deseq2_gsea: bool,
             gsea_input: str,
             gsea_gene_name_keywords: Optional[List[str]],
-            gsea_gene_set_name_keywords: Optional[List[str]]):
+            gsea_gene_set_name_keywords: Optional[List[str]],
+            colormap: str,
+            invert_colors: bool):
 
         self.count_table = count_table
         self.sample_info_table = sample_info_table
@@ -73,9 +80,12 @@ class RNASeqAnalysis(Processor):
         self.gsea_input = gsea_input
         self.gsea_gene_name_keywords = gsea_gene_name_keywords
         self.gsea_gene_set_name_keywords = gsea_gene_set_name_keywords
+        self.colormap = colormap
+        self.invert_colors = invert_colors
 
         self.read_tables()
         self.subset_samples()
+        self.set_colors()
         self.batch_correction()
         self.tpm()
         self.deseq2()
@@ -96,6 +106,13 @@ class RNASeqAnalysis(Processor):
         self.count_df = SubsetSamples(self.settings).main(
             count_df=self.count_df,
             sample_info_df=self.sample_info_df)
+
+    def set_colors(self):
+        self.colors = GetColors(self.settings).main(
+            sample_info_df=self.sample_info_df,
+            sample_group_column=self.sample_group_column,
+            colormap=self.colormap,
+            invert_colors=self.invert_colors)
 
     def batch_correction(self):
         if self.sample_batch_column is not None:
@@ -150,10 +167,47 @@ class RNASeqAnalysis(Processor):
             tpm_df=self.tpm_df,
             deseq2_normalized_count_df=self.deseq2_normalized_count_df,
             sample_info_df=self.sample_info_df,
-            sample_group_column=self.sample_group_column)
+            sample_group_column=self.sample_group_column,
+            colors=self.colors)
 
     def clean_up(self):
         CleanUp(self.settings).main()
+
+
+class GetColors(Processor):
+
+    sample_info_df: pd.DataFrame
+    sample_group_column: str
+    colormap: str
+    invert_colors: bool
+
+    def main(
+            self,
+            sample_info_df: pd.DataFrame,
+            sample_group_column: str,
+            colormap: str,
+            invert_colors: bool) -> List[Tuple[float, float, float, float]]:
+
+        self.sample_info_df = sample_info_df
+        self.sample_group_column = sample_group_column
+        self.colormap = colormap
+        self.invert_colors = invert_colors
+
+        n_groups = len(self.sample_info_df[self.sample_group_column].unique())
+
+        if ',' in self.colormap:
+            names = self.colormap.split(',')
+            if len(names) != n_groups:
+                self.logger.info(f'WARNING! Number of colors "{self.colormap}" does not match number of groups ({n_groups})')
+            colors = [to_rgba(n) for n in names]
+        else:
+            cmap = plt.colormaps[self.colormap]
+            colors = [cmap(i) for i in range(n_groups)]
+
+        if self.invert_colors:
+            colors = colors[::-1]
+
+        return colors
 
 
 class CleanUp(Processor):

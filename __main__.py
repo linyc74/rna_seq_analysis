@@ -2,7 +2,7 @@ import argparse
 import rna_seq_analysis
 
 
-__VERSION__ = '1.1.0'
+__VERSION__ = '1.1.1-beta'
 
 
 PROG = 'python rna_seq_analysis'
@@ -151,6 +151,22 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--colormap'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'Set1',
+            'help': 'matplotlib colormap for plotting, or comma-separated color names, e.g. "darkred,lightgreen,skyblue" (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--invert-colors'],
+        'properties': {
+            'action': 'store_true',
+            'help': 'invert the order of colors',
+        }
+    },
+    {
         'keys': ['--publication-figure'],
         'properties': {
             'action': 'store_true',
@@ -247,6 +263,8 @@ class EntryPoint:
             gsea_input=args.gsea_input,
             gsea_gene_name_keywords=args.gsea_gene_name_keywords,
             gsea_gene_set_name_keywords=args.gsea_gene_set_name_keywords,
+            colormap=args.colormap,
+            invert_colors=args.invert_colors,
             publication_figure=args.publication_figure,
             threads=args.threads,
             debug=args.debug,

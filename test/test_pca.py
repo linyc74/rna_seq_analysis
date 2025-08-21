@@ -18,12 +18,14 @@ class TestPCA(TestCase):
         deseq2_normalized_count_df = pd.read_csv(f'{self.indir}/deseq2_normalized_count.csv', index_col=0)
         sample_info_df = pd.read_csv(f'{self.indir}/22_1209_randomize_rna_seq_data_sample_info.csv', index_col=0)
         sample_group_column = 'group'
+        colors = [(0.9, 0.2, 0.5, 1.), (0.5, 0.8, 1., 1.)]
 
         PCA(self.settings).main(
             tpm_df=tpm_df,
             deseq2_normalized_count_df=deseq2_normalized_count_df,
             sample_info_df=sample_info_df,
             sample_group_column=sample_group_column,
+            colors=colors,
         )
 
         for filename in [
