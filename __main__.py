@@ -4,7 +4,7 @@ import rna_seq_analysis
 warnings.filterwarnings('ignore')
 
 
-__VERSION__ = '1.1.2-beta'
+__VERSION__ = '1.1.2'
 
 
 PROG = 'python rna_seq_analysis'
