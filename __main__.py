@@ -1,8 +1,10 @@
 import argparse
+import warnings
 import rna_seq_analysis
+warnings.filterwarnings('ignore')
 
 
-__VERSION__ = '1.1.1'
+__VERSION__ = '1.1.2-beta'
 
 
 PROG = 'python rna_seq_analysis'
@@ -120,6 +122,15 @@ OPTIONAL = [
         'properties': {
             'action': 'store_true',
             'help': 'completely skip DESeq2 and GSEA analyses, i.e. no group contrast',
+        }
+    },
+    {
+        'keys': ['--volcano-plot-label-genes'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'comma-separated gene names to be labeled on the volcano plot (default: %(default)s)',
         }
     },
     {
@@ -260,6 +271,7 @@ class EntryPoint:
             experimental_group_name=args.experimental_group_name,
             sample_batch_column=args.sample_batch_column,
             skip_deseq2_gsea=args.skip_deseq2_gsea,
+            volcano_plot_label_genes=args.volcano_plot_label_genes,
             gsea_input=args.gsea_input,
             gsea_gene_name_keywords=args.gsea_gene_name_keywords,
             gsea_gene_set_name_keywords=args.gsea_gene_set_name_keywords,

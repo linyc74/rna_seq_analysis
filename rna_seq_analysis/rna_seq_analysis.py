@@ -29,6 +29,7 @@ class RNASeqAnalysis(Processor):
     experimental_group_name: str
     sample_batch_column: Optional[str]
     skip_deseq2_gsea: bool
+    volcano_plot_label_genes: Optional[List[str]]
     gsea_input: str
     gsea_gene_name_keywords: Optional[List[str]]
     gsea_gene_set_name_keywords: Optional[List[str]]
@@ -58,6 +59,7 @@ class RNASeqAnalysis(Processor):
             experimental_group_name: str,
             sample_batch_column: Optional[str],
             skip_deseq2_gsea: bool,
+            volcano_plot_label_genes: Optional[List[str]],
             gsea_input: str,
             gsea_gene_name_keywords: Optional[List[str]],
             gsea_gene_set_name_keywords: Optional[List[str]],
@@ -77,6 +79,7 @@ class RNASeqAnalysis(Processor):
         self.experimental_group_name = experimental_group_name
         self.sample_batch_column = sample_batch_column
         self.skip_deseq2_gsea = skip_deseq2_gsea
+        self.volcano_plot_label_genes = volcano_plot_label_genes
         self.gsea_input = gsea_input
         self.gsea_gene_name_keywords = gsea_gene_name_keywords
         self.gsea_gene_set_name_keywords = gsea_gene_set_name_keywords
@@ -139,7 +142,9 @@ class RNASeqAnalysis(Processor):
                 experimental_group_name=self.experimental_group_name,
                 gene_info_df=self.gene_info_df,
                 gene_name_column=self.gene_name_column,
-                gene_description_column=self.gene_description_column)
+                gene_description_column=self.gene_description_column,
+                volcano_plot_label_genes=self.volcano_plot_label_genes,
+                colors=self.colors)
 
     def heatmap(self):
         Heatmap(self.settings).main(
@@ -213,7 +218,6 @@ class GetColors(Processor):
 class CleanUp(Processor):
 
     def main(self):
-        self.collect_files(file_ext='R', dstdir_name='r-scripts')
         self.collect_files(file_ext='log', dstdir_name='log')
         self.remove_workdir()
 

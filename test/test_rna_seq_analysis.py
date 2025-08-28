@@ -26,6 +26,13 @@ class TestRNASeqAnalysis(TestCase):
             experimental_group_name='cancer',
             sample_batch_column='batch',
             skip_deseq2_gsea=False,
+            volcano_plot_label_genes=[
+                'FAM238B',
+                'RP1L1',
+                'BOP1',
+                'DRAIC',
+                'EIF2B2',
+            ],
             gsea_input='deseq2',
             gsea_gene_name_keywords=None,
             gsea_gene_set_name_keywords=None,
