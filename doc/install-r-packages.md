@@ -1,3 +1,5 @@
+# Install R Packages
+
 ### Configure `apt` repo
 
 https://cran.r-project.org/bin/linux/ubuntu/
@@ -39,14 +41,16 @@ In the R console:
 ```R
 install.packages("BiocManager")
 
-# upgrade bioconductor
-BiocManager::install(version="3.16")
+BiocManager::install(version="3.22")  # update bioconductor
 
-# use bioconductor to install deseq2
 BiocManager::install("DESeq2")
+BiocManager::install("sva")  # this includes ComBat-seq
 
-# ComBat-seq
-BiocManager::install("sva")
+# clusterProfiler and databases
+BiocManager::install("clusterProfiler")
+BiocManager::install("org.Hs.eg.db")  # human
+BiocManager::install("org.Mm.eg.db")  # mouse
+BiocManager::install("org.Rn.eg.db")  # rat
 ```
 
 ## Troubleshoot
@@ -57,7 +61,7 @@ and then re-run the whole installation again.
 
 ```bash
 # this only removes the r-base itself
-sudo apt purge r-base
+sudo apt purge r-base-dev
 
 # remove all other r dependencies
 sudo apt autoremove
