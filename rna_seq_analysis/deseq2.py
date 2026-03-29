@@ -20,6 +20,8 @@ class DESeq2(Processor):
     gene_name_column: str
     gene_description_column: Optional[str]
     volcano_plot_label_genes: Optional[List[str]]
+    gene_p_threshold: float
+    gene_q_threshold: float
     colors: List[Tuple[float, float, float, float]]
 
     count_csv: str
@@ -42,6 +44,8 @@ class DESeq2(Processor):
             gene_name_column: str,
             gene_description_column: Optional[str],
             volcano_plot_label_genes: Optional[List[str]],
+            gene_p_threshold: float,
+            gene_q_threshold: float,
             colors: List[Tuple[float, float, float, float]]) -> pd.DataFrame:
 
         self.count_df = count_df
@@ -53,6 +57,8 @@ class DESeq2(Processor):
         self.gene_name_column = gene_name_column
         self.gene_description_column = gene_description_column
         self.volcano_plot_label_genes = volcano_plot_label_genes
+        self.gene_p_threshold = gene_p_threshold
+        self.gene_q_threshold = gene_q_threshold
         self.colors = colors
         
         self.check_group_name()
@@ -201,13 +207,17 @@ write.csv(
         up_color_index = all_group_names.index(self.experimental_group_name)
         down_color_index = all_group_names.index(self.control_group_name)
 
-        for p_value_column in ['padj', 'pvalue']:
+        for column, threshold in [
+            ('pvalue', self.gene_p_threshold),
+            ('padj', self.gene_q_threshold),
+        ]:
             volcano_plot(
             df=self.statistics_df,
             fold_change_column='log2FoldChange',
-            p_value_column=p_value_column,
+            p_value_column=column,
+            p_value_threshold=threshold,
             gene_name_column=self.gene_name_column,
-            png=f'{self.outdir}/{self.DSTDIR_NAME}/{p_value_column}-volcano-plot.png',
+            png=f'{self.outdir}/{self.DSTDIR_NAME}/{column}-volcano-plot.png',
             genes_to_label=self.volcano_plot_label_genes,
             up_color=self.colors[up_color_index],
             down_color=self.colors[down_color_index],
@@ -227,7 +237,6 @@ def left_join(left: pd.DataFrame, right: pd.DataFrame) -> pd.DataFrame:
 
 
 FOLD_CHANGE_THRESHOLD = 1.0
-P_THRESHOLD = 0.05
 NON_SIGNIFICANT_COLOR = (0.8, 0.8, 0.8, 1.0)  # light grey
 ALPHA = 0.5
 SIGNIFICANT_POINT_SIZE = 12
@@ -244,6 +253,7 @@ def volcano_plot(
         df: pd.DataFrame,
         fold_change_column: str,
         p_value_column: str,
+        p_value_threshold: float,
         gene_name_column: str,
         png: str,
         genes_to_label: Optional[List[str]],
@@ -257,7 +267,7 @@ def volcano_plot(
     x = df[fold_change_column].values
     y = df['neglog10p'].values
 
-    significant = (np.abs(x) >= FOLD_CHANGE_THRESHOLD) & (df[p_value_column].values <= P_THRESHOLD)
+    significant = (np.abs(x) >= FOLD_CHANGE_THRESHOLD) & (df[p_value_column].values <= p_value_threshold)
     up = significant & (x > 0)
     down = significant & (x < 0)
 

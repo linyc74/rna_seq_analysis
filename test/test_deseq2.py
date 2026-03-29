@@ -8,8 +8,8 @@ class TestDESeq2(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    def tearDown(self):
-        self.tear_down()
+    # def tearDown(self):
+    #     self.tear_down()
 
     def test_main(self):
         DESeq2(self.settings).main(
@@ -28,6 +28,8 @@ class TestDESeq2(TestCase):
                 'DRAIC',
                 'EIF2B2',
             ],
+            gene_p_threshold=0.05,
+            gene_q_threshold=0.000000001,
             colors=[(1.0, 0.3, 0.1, 1.0), (0.2, 0.1, 1.0, 1.0)],
         )
 
@@ -50,6 +52,8 @@ class TestDESeq2(TestCase):
                     'DRAIC',
                     'EIF2B2',
                 ],
+                gene_p_threshold=0.05,
+                gene_q_threshold=0.1,
                 colors=[(1.0, 0.3, 0.1, 1.0), (0.2, 0.1, 1.0, 1.0)],
             )
         
@@ -58,6 +62,7 @@ class TestDESeq2(TestCase):
             df=pd.read_csv(f'{self.indir}/statistics_df.csv', index_col=0),
             fold_change_column='log2FoldChange',
             p_value_column='padj',
+            p_value_threshold=1e-10,
             gene_name_column='gene_name',
             png=f'{self.outdir}/padj-volcano-plot.png',
             genes_to_label=[

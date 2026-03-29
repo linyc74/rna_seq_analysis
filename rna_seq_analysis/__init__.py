@@ -22,6 +22,11 @@ def main(
         gsea_input: str,
         gsea_gene_name_keywords: str,
         gsea_gene_set_name_keywords: str,
+        gene_p_threshold: float,
+        gene_q_threshold: float,
+        pathway_p_threshold: float,
+        pathway_q_threshold: float,
+        show_n_pathways: int,
         colormap: str,
         invert_colors: bool,
         publication_figure: bool,
@@ -58,6 +63,11 @@ def main(
         gsea_input=gsea_input,
         gsea_gene_name_keywords=None if gsea_gene_name_keywords.lower() == 'none' else gsea_gene_name_keywords.split(','),
         gsea_gene_set_name_keywords=None if gsea_gene_set_name_keywords.lower() == 'none' else gsea_gene_set_name_keywords.split(','),
+        gene_p_threshold=gene_p_threshold,
+        gene_q_threshold=gene_q_threshold,
+        pathway_p_threshold=pathway_p_threshold,
+        pathway_q_threshold=pathway_q_threshold,
+        show_n_pathways=show_n_pathways,
         colormap=colormap,
         invert_colors=invert_colors
     )

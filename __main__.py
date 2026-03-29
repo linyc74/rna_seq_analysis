@@ -162,6 +162,51 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--gene-p-threshold'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 0.05,
+            'help': 'gene-level p-value threshold for differential expression analysis (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--gene-q-threshold'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 0.1,
+            'help': 'gene-level q-value threshold for differential expression analysis (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--pathway-p-threshold'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 0.05,
+            'help': 'pathway-level p-value threshold for enrichment analysis (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--pathway-q-threshold'],
+        'properties': {
+            'type': float,
+            'required': False,
+            'default': 0.2,
+            'help': 'pathway-level q-value threshold for enrichment analysis (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--show-n-pathways'],
+        'properties': {
+            'type': int,
+            'required': False,
+            'default': 20,
+            'help': 'number of pathways to show in the enrichment analysis (default: %(default)s)',
+        }
+    },
+    {
         'keys': ['--colormap'],
         'properties': {
             'type': str,
@@ -275,6 +320,11 @@ class EntryPoint:
             gsea_input=args.gsea_input,
             gsea_gene_name_keywords=args.gsea_gene_name_keywords,
             gsea_gene_set_name_keywords=args.gsea_gene_set_name_keywords,
+            gene_p_threshold=args.gene_p_threshold,
+            gene_q_threshold=args.gene_q_threshold,
+            pathway_p_threshold=args.pathway_p_threshold,
+            pathway_q_threshold=args.pathway_q_threshold,
+            show_n_pathways=args.show_n_pathways,
             colormap=args.colormap,
             invert_colors=args.invert_colors,
             publication_figure=args.publication_figure,

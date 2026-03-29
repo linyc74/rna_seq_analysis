@@ -33,6 +33,11 @@ class RNASeqAnalysis(Processor):
     gsea_input: str
     gsea_gene_name_keywords: Optional[List[str]]
     gsea_gene_set_name_keywords: Optional[List[str]]
+    gene_p_threshold: float
+    gene_q_threshold: float
+    pathway_p_threshold: float
+    pathway_q_threshold: float
+    show_n_pathways: int
     colormap: str
     invert_colors: bool
 
@@ -63,7 +68,12 @@ class RNASeqAnalysis(Processor):
             gsea_input: str,
             gsea_gene_name_keywords: Optional[List[str]],
             gsea_gene_set_name_keywords: Optional[List[str]],
-            colormap: str,
+            gene_p_threshold: float,
+            gene_q_threshold: float,
+            pathway_p_threshold: float,
+            pathway_q_threshold: float,
+            show_n_pathways: int,
+                colormap: str,
             invert_colors: bool):
 
         self.count_table = count_table
@@ -83,6 +93,11 @@ class RNASeqAnalysis(Processor):
         self.gsea_input = gsea_input
         self.gsea_gene_name_keywords = gsea_gene_name_keywords
         self.gsea_gene_set_name_keywords = gsea_gene_set_name_keywords
+        self.gene_p_threshold = gene_p_threshold
+        self.gene_q_threshold = gene_q_threshold
+        self.pathway_p_threshold = pathway_p_threshold
+        self.pathway_q_threshold = pathway_q_threshold
+        self.show_n_pathways = show_n_pathways
         self.colormap = colormap
         self.invert_colors = invert_colors
 
@@ -144,6 +159,8 @@ class RNASeqAnalysis(Processor):
                 gene_name_column=self.gene_name_column,
                 gene_description_column=self.gene_description_column,
                 volcano_plot_label_genes=self.volcano_plot_label_genes,
+                gene_p_threshold=self.gene_p_threshold,
+                gene_q_threshold=self.gene_q_threshold,
                 colors=self.colors)
 
     def heatmap(self):
