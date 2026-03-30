@@ -30,7 +30,7 @@ class RNASeqAnalysis(Processor):
     control_group_name: Optional[str]
     experimental_group_name: Optional[str]
     sample_batch_column: Optional[str]
-    skip_deseq2_gsea: bool
+    skip_differential_analysis: bool
     volcano_plot_label_genes: Optional[List[str]]
     gsea_input: str
     gsea_gene_name_keywords: Optional[List[str]]
@@ -67,7 +67,7 @@ class RNASeqAnalysis(Processor):
             control_group_name: Optional[str],
             experimental_group_name: Optional[str],
             sample_batch_column: Optional[str],
-            skip_deseq2_gsea: bool,
+            skip_differential_analysis: bool,
             volcano_plot_label_genes: Optional[List[str]],
             gsea_input: str,
             gsea_gene_name_keywords: Optional[List[str]],
@@ -93,7 +93,7 @@ class RNASeqAnalysis(Processor):
         self.control_group_name = control_group_name
         self.experimental_group_name = experimental_group_name
         self.sample_batch_column = sample_batch_column
-        self.skip_deseq2_gsea = skip_deseq2_gsea
+        self.skip_differential_analysis = skip_differential_analysis
         self.volcano_plot_label_genes = volcano_plot_label_genes
         self.gsea_input = gsea_input
         self.gsea_gene_name_keywords = gsea_gene_name_keywords
@@ -142,7 +142,7 @@ class RNASeqAnalysis(Processor):
             gene_length_column=self.gene_length_column)
 
     def differential_analysis(self):
-        if self.skip_deseq2_gsea:
+        if self.skip_differential_analysis:
             self.deseq2_normalized_count_df = None
             self.deseq2_statistics_df = None
             return

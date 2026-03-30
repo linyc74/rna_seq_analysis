@@ -118,10 +118,10 @@ OPTIONAL = [
         }
     },
     {
-        'keys': ['--skip-deseq2-gsea'],
+        'keys': ['--skip-differential-analysis'],
         'properties': {
             'action': 'store_true',
-            'help': 'completely skip DESeq2 and GSEA analyses, i.e. no group contrast',
+            'help': 'completely skip differential analysis including DESeq2, GSEA, and pathway enrichment, i.e. no group contrast',
         }
     },
     {
@@ -325,7 +325,7 @@ class EntryPoint:
             control_group_name=args.control_group_name,
             experimental_group_name=args.experimental_group_name,
             sample_batch_column=args.sample_batch_column,
-            skip_deseq2_gsea=args.skip_deseq2_gsea,
+            skip_differential_analysis=args.skip_differential_analysis,
             volcano_plot_label_genes=args.volcano_plot_label_genes,
             gsea_input=args.gsea_input,
             gsea_gene_name_keywords=args.gsea_gene_name_keywords,

@@ -25,7 +25,7 @@ class TestRNASeqAnalysis(TestCase):
             control_group_name=None,
             experimental_group_name=None,
             sample_batch_column='batch',
-            skip_deseq2_gsea=False,
+            skip_differential_analysis=False,
             volcano_plot_label_genes=[
                 'FAM238B',
                 'RP1L1',
