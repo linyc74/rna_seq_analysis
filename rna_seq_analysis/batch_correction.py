@@ -91,7 +91,7 @@ write.csv(
     file='{self.corrected_csv}'
 )
 '''
-        self.r_script = f'{self.outdir}/combat-seq.R'
+        self.r_script = f'{self.workdir}/combat-seq.R'
         with open(self.r_script, 'w') as fh:
             fh.write(text)
 

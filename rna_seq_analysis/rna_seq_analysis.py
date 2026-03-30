@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from copy import copy
+from itertools import combinations
 from matplotlib.colors import to_rgba
 from typing import Optional, List, Tuple
 from .tpm import TPM
@@ -25,8 +27,8 @@ class RNASeqAnalysis(Processor):
     gene_description_column: Optional[str]
     heatmap_read_fraction: float
     sample_group_column: str
-    control_group_name: str
-    experimental_group_name: str
+    control_group_name: Optional[str]
+    experimental_group_name: Optional[str]
     sample_batch_column: Optional[str]
     skip_deseq2_gsea: bool
     volcano_plot_label_genes: Optional[List[str]]
@@ -62,8 +64,8 @@ class RNASeqAnalysis(Processor):
             gene_description_column: Optional[str],
             heatmap_read_fraction: float,
             sample_group_column: str,
-            control_group_name: str,
-            experimental_group_name: str,
+            control_group_name: Optional[str],
+            experimental_group_name: Optional[str],
             sample_batch_column: Optional[str],
             skip_deseq2_gsea: bool,
             volcano_plot_label_genes: Optional[List[str]],
@@ -105,21 +107,12 @@ class RNASeqAnalysis(Processor):
         self.colormap = colormap
         self.invert_colors = invert_colors
 
-        self.read_tables()
-        self.subset_samples()
-        self.set_colors()
-        self.batch_correction()
-        self.tpm()
-        
-        self.differential_expression_analysis(
-            control_group_name=self.control_group_name,
-            experimental_group_name=self.experimental_group_name)
-
+        self.preprocessing()
+        self.differential_analysis()
         self.heatmap_and_pca()
-
         CleanUp(self.settings).main()
 
-    def read_tables(self):
+    def preprocessing(self):
         self.count_df = read(self.count_table)
         self.sample_info_df = read(self.sample_info_table)
         self.gene_info_df = read(self.gene_info_table)
@@ -127,42 +120,58 @@ class RNASeqAnalysis(Processor):
         for df in [self.count_df, self.sample_info_df, self.gene_info_df]:
             df.index.name = None  # make all final output files clean without index names
 
-    def subset_samples(self):
         self.count_df = SubsetSamples(self.settings).main(
             count_df=self.count_df,
             sample_info_df=self.sample_info_df)
 
-    def set_colors(self):
         self.colors = GetColors(self.settings).main(
             sample_info_df=self.sample_info_df,
             sample_group_column=self.sample_group_column,
             colormap=self.colormap,
             invert_colors=self.invert_colors)
 
-    def batch_correction(self):
         if self.sample_batch_column is not None:
             self.count_df = BatchCorrection(self.settings).main(
                 count_df=self.count_df,
                 sample_info_df=self.sample_info_df,
                 sample_batch_column=self.sample_batch_column)
 
-    def tpm(self):
         self.tpm_df = TPM(self.settings).main(
             count_df=self.count_df,
             gene_info_df=self.gene_info_df,
             gene_length_column=self.gene_length_column)
 
-    def differential_expression_analysis(self, control_group_name: str, experimental_group_name: str):
-
-        __control = control_group_name  # variable names for better visibility
-        __experimental = experimental_group_name
-
+    def differential_analysis(self):
         if self.skip_deseq2_gsea:
             self.deseq2_normalized_count_df = None
             self.deseq2_statistics_df = None
             return
 
-        self.deseq2_normalized_count_df, self.deseq2_statistics_df = DESeq2(self.settings).main(
+        if self.control_group_name is None or self.experimental_group_name is None:
+            comparisons = list(combinations(self.sample_info_df[self.sample_group_column].unique(), 2))
+        else:
+            comparisons = [(self.control_group_name, self.experimental_group_name)]
+        
+        msg = f'Running differential expression analysis for {len(comparisons)} comparisons:'
+        for control, experimental in comparisons:
+            msg += f'\n  "{control}" vs "{experimental}"'
+        self.logger.info(msg)
+
+        for control, experimental in comparisons:
+            self.compare(control_group_name=control, experimental_group_name=experimental)
+
+    def compare(self, control_group_name: str, experimental_group_name: str):
+        self.logger.info(f'Running differential expression analysis for "{control_group_name}" vs "{experimental_group_name}"')
+
+        __control = control_group_name  # variable names for better visibility
+        __experimental = experimental_group_name
+        new_settings = copy(self.settings)
+        new_settings.outdir = f'{self.settings.outdir}/{__control}__vs__{__experimental}'
+        new_settings.workdir = f'{self.settings.workdir}/{__control}__vs__{__experimental}'
+        for d in [new_settings.workdir, new_settings.outdir]:
+            os.makedirs(d, exist_ok=True)
+
+        self.deseq2_normalized_count_df, self.deseq2_statistics_df = DESeq2(new_settings).main(
             count_df=self.count_df,
             sample_info_df=self.sample_info_df,
             sample_group_column=self.sample_group_column,
@@ -176,7 +185,7 @@ class RNASeqAnalysis(Processor):
             gene_q_threshold=self.gene_q_threshold,
             colors=self.colors)
     
-        ClusterProfiler(self.settings).main(
+        ClusterProfiler(new_settings).main(
             statistics_df=self.deseq2_statistics_df,
             organism=self.organism,
             control_group_name=__control,
@@ -188,7 +197,7 @@ class RNASeqAnalysis(Processor):
             show_n_pathways=self.show_n_pathways)
         
         if self.gene_sets_gmt is not None:
-            GSEA(self.settings).main(
+            GSEA(new_settings).main(
                 count_df=self.tpm_df if self.gsea_input == 'tpm' else self.deseq2_normalized_count_df,
                 gene_info_df=self.gene_info_df,
                 sample_info_df=self.sample_info_df,

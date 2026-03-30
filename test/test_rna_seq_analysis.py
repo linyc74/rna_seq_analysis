@@ -22,8 +22,8 @@ class TestRNASeqAnalysis(TestCase):
             gene_description_column='gene_description',
             heatmap_read_fraction=0.8,
             sample_group_column='group',
-            control_group_name='normal',
-            experimental_group_name='cancer',
+            control_group_name=None,
+            experimental_group_name=None,
             sample_batch_column='batch',
             skip_deseq2_gsea=False,
             volcano_plot_label_genes=[
