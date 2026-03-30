@@ -95,7 +95,7 @@ OPTIONAL = [
         'properties': {
             'type': str,
             'required': False,
-            'default': 'normal',
+            'default': 'None',
             'help': 'control group name in the "sample group column" (default: %(default)s)',
         }
     },
@@ -104,7 +104,7 @@ OPTIONAL = [
         'properties': {
             'type': str,
             'required': False,
-            'default': 'tumor',
+            'default': 'None',
             'help': 'experimental group name in the "sample group column" (default: %(default)s)',
         }
     },
@@ -195,6 +195,16 @@ OPTIONAL = [
             'required': False,
             'default': 0.2,
             'help': 'pathway-level q-value threshold for enrichment analysis (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--organism'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'choices': ['human', 'mouse', 'rat'],
+            'default': 'human',
+            'help': 'organism for clusterProfiler (default: %(default)s)',
         }
     },
     {
@@ -324,6 +334,7 @@ class EntryPoint:
             gene_q_threshold=args.gene_q_threshold,
             pathway_p_threshold=args.pathway_p_threshold,
             pathway_q_threshold=args.pathway_q_threshold,
+            organism=args.organism,
             show_n_pathways=args.show_n_pathways,
             colormap=args.colormap,
             invert_colors=args.invert_colors,

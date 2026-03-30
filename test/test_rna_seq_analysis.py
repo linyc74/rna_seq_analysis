@@ -1,6 +1,6 @@
 import pandas as pd
 from .setup import TestCase
-from rna_seq_analysis.rna_seq_analysis import RNASeqAnalysis, GetColors
+from rna_seq_analysis.rna_seq_analysis import RNASeqAnalysis, GetColors, SubsetSamples
 
 
 class TestRNASeqAnalysis(TestCase):
@@ -36,9 +36,39 @@ class TestRNASeqAnalysis(TestCase):
             gsea_input='deseq2',
             gsea_gene_name_keywords=None,
             gsea_gene_set_name_keywords=None,
+            gene_p_threshold=0.05,
+            gene_q_threshold=0.5,
+            pathway_p_threshold=0.05,
+            pathway_q_threshold=0.5,
+            organism='human',
+            show_n_pathways=20,
             colormap='Set1',
             invert_colors=True
         )
+
+
+class TestSubsetSamples(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_main(self):
+        actual = SubsetSamples(self.settings).main(
+            count_df=pd.read_csv(f'{self.indir}/count.csv', index_col=0),
+            sample_info_df=pd.read_csv(f'{self.indir}/sample-info.csv', index_col=0)
+        )
+        expected = pd.read_csv(f'{self.indir}/count-subset.csv', index_col=0)
+        self.assertDataFrameEqual(actual, expected)
+
+    def test_wrong_sample_info(self):
+        with self.assertRaises(AssertionError):
+            SubsetSamples(self.settings).main(
+                count_df=pd.read_csv(f'{self.indir}/count.csv', index_col=0),
+                sample_info_df=pd.read_csv(f'{self.indir}/wrong-sample-info.csv', index_col=0)
+            )
 
 
 class TestGetColors(TestCase):

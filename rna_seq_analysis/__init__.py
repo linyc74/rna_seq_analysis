@@ -26,6 +26,7 @@ def main(
         gene_q_threshold: float,
         pathway_p_threshold: float,
         pathway_q_threshold: float,
+        organism: str,
         show_n_pathways: int,
         colormap: str,
         invert_colors: bool,
@@ -67,6 +68,7 @@ def main(
         gene_q_threshold=gene_q_threshold,
         pathway_p_threshold=pathway_p_threshold,
         pathway_q_threshold=pathway_q_threshold,
+        organism=organism,
         show_n_pathways=show_n_pathways,
         colormap=colormap,
         invert_colors=invert_colors

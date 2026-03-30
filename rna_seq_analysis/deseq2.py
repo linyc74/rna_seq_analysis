@@ -46,7 +46,7 @@ class DESeq2(Processor):
             volcano_plot_label_genes: Optional[List[str]],
             gene_p_threshold: float,
             gene_q_threshold: float,
-            colors: List[Tuple[float, float, float, float]]) -> pd.DataFrame:
+            colors: List[Tuple[float, float, float, float]]) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
         self.count_df = count_df
         self.sample_info_df = sample_info_df
@@ -72,7 +72,7 @@ class DESeq2(Processor):
         self.rewrite_output_csvs()
         self.volcano_plot()
 
-        return self.normalized_count_df
+        return self.normalized_count_df, self.statistics_df
 
     def check_group_name(self):
         valid_group_names = set(self.sample_info_df[self.sample_group_column])

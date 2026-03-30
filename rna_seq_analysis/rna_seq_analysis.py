@@ -10,8 +10,8 @@ from .deseq2 import DESeq2
 from .tools import get_files
 from .heatmap import Heatmap
 from .template import Processor
-from .subset_samples import SubsetSamples
 from .batch_correction import BatchCorrection
+from .cluster_profiler import ClusterProfiler
 
 
 class RNASeqAnalysis(Processor):
@@ -37,6 +37,7 @@ class RNASeqAnalysis(Processor):
     gene_q_threshold: float
     pathway_p_threshold: float
     pathway_q_threshold: float
+    organism: str
     show_n_pathways: int
     colormap: str
     invert_colors: bool
@@ -48,6 +49,7 @@ class RNASeqAnalysis(Processor):
 
     tpm_df: pd.DataFrame
     deseq2_normalized_count_df: Optional[pd.DataFrame]
+    deseq2_statistics_df: Optional[pd.DataFrame]
 
     def main(
             self,
@@ -72,8 +74,9 @@ class RNASeqAnalysis(Processor):
             gene_q_threshold: float,
             pathway_p_threshold: float,
             pathway_q_threshold: float,
+            organism: str,
             show_n_pathways: int,
-                colormap: str,
+            colormap: str,
             invert_colors: bool):
 
         self.count_table = count_table
@@ -97,6 +100,7 @@ class RNASeqAnalysis(Processor):
         self.gene_q_threshold = gene_q_threshold
         self.pathway_p_threshold = pathway_p_threshold
         self.pathway_q_threshold = pathway_q_threshold
+        self.organism = organism
         self.show_n_pathways = show_n_pathways
         self.colormap = colormap
         self.invert_colors = invert_colors
@@ -106,11 +110,14 @@ class RNASeqAnalysis(Processor):
         self.set_colors()
         self.batch_correction()
         self.tpm()
-        self.deseq2()
-        self.heatmap()
-        self.pca()
-        self.gsea()
-        self.clean_up()
+        
+        self.differential_expression_analysis(
+            control_group_name=self.control_group_name,
+            experimental_group_name=self.experimental_group_name)
+
+        self.heatmap_and_pca()
+
+        CleanUp(self.settings).main()
 
     def read_tables(self):
         self.count_df = read(self.count_table)
@@ -145,46 +152,60 @@ class RNASeqAnalysis(Processor):
             gene_info_df=self.gene_info_df,
             gene_length_column=self.gene_length_column)
 
-    def deseq2(self):
+    def differential_expression_analysis(self, control_group_name: str, experimental_group_name: str):
+
+        __control = control_group_name  # variable names for better visibility
+        __experimental = experimental_group_name
+
         if self.skip_deseq2_gsea:
             self.deseq2_normalized_count_df = None
-        else:
-            self.deseq2_normalized_count_df = DESeq2(self.settings).main(
-                count_df=self.count_df,
-                sample_info_df=self.sample_info_df,
-                sample_group_column=self.sample_group_column,
-                control_group_name=self.control_group_name,
-                experimental_group_name=self.experimental_group_name,
-                gene_info_df=self.gene_info_df,
-                gene_name_column=self.gene_name_column,
-                gene_description_column=self.gene_description_column,
-                volcano_plot_label_genes=self.volcano_plot_label_genes,
-                gene_p_threshold=self.gene_p_threshold,
-                gene_q_threshold=self.gene_q_threshold,
-                colors=self.colors)
+            self.deseq2_statistics_df = None
+            return
 
-    def heatmap(self):
+        self.deseq2_normalized_count_df, self.deseq2_statistics_df = DESeq2(self.settings).main(
+            count_df=self.count_df,
+            sample_info_df=self.sample_info_df,
+            sample_group_column=self.sample_group_column,
+            control_group_name=__control,
+            experimental_group_name=__experimental,
+            gene_info_df=self.gene_info_df,
+            gene_name_column=self.gene_name_column,
+            gene_description_column=self.gene_description_column,
+            volcano_plot_label_genes=self.volcano_plot_label_genes,
+            gene_p_threshold=self.gene_p_threshold,
+            gene_q_threshold=self.gene_q_threshold,
+            colors=self.colors)
+    
+        ClusterProfiler(self.settings).main(
+            statistics_df=self.deseq2_statistics_df,
+            organism=self.organism,
+            control_group_name=__control,
+            experimental_group_name=__experimental,
+            gene_name_column=self.gene_name_column,
+            gene_q_threshold=self.gene_q_threshold,
+            pathway_p_threshold=self.pathway_p_threshold,
+            pathway_q_threshold=self.pathway_q_threshold,
+            show_n_pathways=self.show_n_pathways)
+        
+        if self.gene_sets_gmt is not None:
+            GSEA(self.settings).main(
+                count_df=self.tpm_df if self.gsea_input == 'tpm' else self.deseq2_normalized_count_df,
+                gene_info_df=self.gene_info_df,
+                sample_info_df=self.sample_info_df,
+                gene_name_column=self.gene_name_column,
+                sample_group_column=self.sample_group_column,
+                control_group_name=__control,
+                experimental_group_name=__experimental,
+                gene_sets_gmt=self.gene_sets_gmt,
+                gene_name_keywords=self.gsea_gene_name_keywords,
+                gene_set_name_keywords=self.gsea_gene_set_name_keywords)
+
+    def heatmap_and_pca(self):
         Heatmap(self.settings).main(
             tpm_df=self.tpm_df,
             deseq2_normalized_count_df=self.deseq2_normalized_count_df,
             heatmap_read_fraction=self.heatmap_read_fraction)
 
-    def gsea(self):
-        if self.skip_deseq2_gsea or self.gene_sets_gmt is None:
-            return
-        GSEA(self.settings).main(
-            count_df=self.tpm_df if self.gsea_input == 'tpm' else self.deseq2_normalized_count_df,
-            gene_info_df=self.gene_info_df,
-            sample_info_df=self.sample_info_df,
-            gene_name_column=self.gene_name_column,
-            sample_group_column=self.sample_group_column,
-            control_group_name=self.control_group_name,
-            experimental_group_name=self.experimental_group_name,
-            gene_sets_gmt=self.gene_sets_gmt,
-            gene_name_keywords=self.gsea_gene_name_keywords,
-            gene_set_name_keywords=self.gsea_gene_set_name_keywords)
-
-    def pca(self):
         PCA(self.settings).main(
             tpm_df=self.tpm_df,
             deseq2_normalized_count_df=self.deseq2_normalized_count_df,
@@ -192,8 +213,26 @@ class RNASeqAnalysis(Processor):
             sample_group_column=self.sample_group_column,
             colors=self.colors)
 
-    def clean_up(self):
-        CleanUp(self.settings).main()
+
+class SubsetSamples(Processor):
+
+    count_df: pd.DataFrame
+    sample_info_df: pd.DataFrame
+
+    def main(
+            self,
+            count_df: pd.DataFrame,
+            sample_info_df: pd.DataFrame) -> pd.DataFrame:
+
+        self.count_df = count_df.copy()
+        self.sample_info_df = sample_info_df.copy()
+
+        for sample_id in self.sample_info_df.index:
+            assert sample_id in self.count_df.columns, f'"{sample_id}" not in count_df.columns'
+
+        self.count_df = self.count_df[self.sample_info_df.index]
+
+        return self.count_df
 
 
 class GetColors(Processor):
