@@ -70,7 +70,7 @@ class ClusterProfiler(Processor):
 
         self.enrichment_name_to_result = {}
         for group_name in self.group_name_to_entrez_ids.keys():
-            self.go_enrichment(group_name)
+            # self.go_enrichment(group_name)
             self.kegg_enrichment(group_name)
 
         for name, result in self.enrichment_name_to_result.items():
@@ -152,15 +152,24 @@ class ClusterProfiler(Processor):
             title        = title,
             orderBy      = 'x',
         )
+        n_plotted = get_n_plotted_pathways(enrichplot=plot)
+        height = get_height(n_plotted)
         r_ggplot2.ggsave(
             filename = png,
             plot    = plot,
             width   = 18 / 2.54,
-            height  = get_height(self.show_n_pathways),
+            height  = height,
             dpi     = 600
         )
 
 
-def get_height(n_pathways: int) -> float:
+def get_n_plotted_pathways(enrichplot: ro.methods.RS4) -> int:
+    build = r_ggplot2.ggplot_build(enrichplot)
+    list_vector = build.slots['data']
+    df = pandas2ri.rpy2py(list_vector[0])
+    return df.shape[0]
+
+
+def get_height(n_plotted: int) -> float:
     padding = 2 / 2.54
-    return padding + (n_pathways * 1 / 2.54)
+    return padding + (n_plotted * 1 / 2.54)

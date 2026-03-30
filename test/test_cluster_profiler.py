@@ -3,7 +3,7 @@ from rna_seq_analysis.cluster_profiler import ClusterProfiler
 from .setup import TestCase
 
 
-class __TestClusterProfiler(TestCase):
+class TestClusterProfiler(TestCase):
 
     def setUp(self):
         self.set_up(py_path=__file__)
