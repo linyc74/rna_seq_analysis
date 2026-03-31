@@ -13,45 +13,6 @@ DSTDIR_NAME = 'pca'
 
 class PCA(Processor):
 
-    tpm_df: pd.DataFrame
-    deseq2_normalized_count_df: Optional[pd.DataFrame]
-    sample_info_df: pd.DataFrame
-    sample_group_column: str
-    colors: List[Tuple[float, float, float, float]]
-
-    def main(
-            self,
-            tpm_df: pd.DataFrame,
-            deseq2_normalized_count_df: Optional[pd.DataFrame],
-            sample_info_df: pd.DataFrame,
-            sample_group_column: str,
-            colors: List[Tuple[float, float, float, float]]):
-
-        self.tpm_df = tpm_df
-        self.deseq2_normalized_count_df = deseq2_normalized_count_df
-        self.sample_info_df = sample_info_df
-        self.sample_group_column = sample_group_column
-        self.colors = colors
-
-        OnePCA(self.settings).main(
-            feature_by_sample_df=self.tpm_df,
-            sample_info_df=self.sample_info_df,
-            sample_group_column=self.sample_group_column,
-            colors=self.colors,
-            fname='pca-tpm'
-        )
-        if self.deseq2_normalized_count_df is not None:
-            OnePCA(self.settings).main(
-                feature_by_sample_df=self.deseq2_normalized_count_df,
-                sample_info_df=self.sample_info_df,
-                sample_group_column=self.sample_group_column,
-                colors=self.colors,
-                fname='pca-deseq2'
-            )
-
-
-class OnePCA(Processor):
-
     XY_COLUMNS = ('PC 1', 'PC 2')
 
     feature_by_sample_df: pd.DataFrame  # row features x column samples

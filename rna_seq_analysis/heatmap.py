@@ -9,36 +9,6 @@ from .template import Processor
 
 class Heatmap(Processor):
 
-    tpm_df: pd.DataFrame
-    deseq2_normalized_count_df: Optional[pd.DataFrame]
-    heatmap_read_fraction: float
-
-    def main(
-            self,
-            tpm_df: pd.DataFrame,
-            deseq2_normalized_count_df: Optional[pd.DataFrame],
-            heatmap_read_fraction: float):
-
-        self.tpm_df = tpm_df
-        self.deseq2_normalized_count_df = deseq2_normalized_count_df
-        self.heatmap_read_fraction = heatmap_read_fraction
-
-        OneHeatmap(self.settings).main(
-            feature_by_sample_df=self.tpm_df,
-            heatmap_read_fraction=self.heatmap_read_fraction,
-            fname='heatmap-tpm'
-        )
-
-        if self.deseq2_normalized_count_df is not None:
-            OneHeatmap(self.settings).main(
-                feature_by_sample_df=self.deseq2_normalized_count_df,
-                heatmap_read_fraction=self.heatmap_read_fraction,
-                fname='heatmap-deseq2'
-            )
-
-
-class OneHeatmap(Processor):
-
     LOG_PSEUDOCOUNT = True
     NORMALIZE_BY_SAMPLE_READS = False
 

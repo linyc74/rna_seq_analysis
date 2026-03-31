@@ -6,8 +6,8 @@ from itertools import combinations
 from matplotlib.colors import to_rgba
 from typing import Optional, List, Tuple
 from .tpm import TPM
-from .pca import PCA
 from .gsea import GSEA
+from .pca import PCA
 from .deseq2 import DESeq2
 from .tools import get_files
 from .heatmap import Heatmap
@@ -109,7 +109,7 @@ class RNASeqAnalysis(Processor):
 
         self.preprocessing()
         self.differential_analysis()
-        self.heatmap_and_pca()
+        self.heatmap_and_pca_for_deseq2()
         CleanUp(self.settings).main()
 
     def preprocessing(self):
@@ -140,6 +140,18 @@ class RNASeqAnalysis(Processor):
             count_df=self.count_df,
             gene_info_df=self.gene_info_df,
             gene_length_column=self.gene_length_column)
+        
+        Heatmap(self.settings).main(
+            feature_by_sample_df=self.tpm_df,
+            heatmap_read_fraction=self.heatmap_read_fraction,
+            fname='heatmap-tpm')
+
+        PCA(self.settings).main(
+            feature_by_sample_df=self.tpm_df,
+            sample_info_df=self.sample_info_df,
+            sample_group_column=self.sample_group_column,
+            colors=self.colors,
+            fname='pca-tpm')
 
     def differential_analysis(self):
         if self.skip_differential_analysis:
@@ -163,11 +175,10 @@ class RNASeqAnalysis(Processor):
     def compare(self, control_group_name: str, experimental_group_name: str):
         self.logger.info(f'Running differential expression analysis for "{control_group_name}" vs "{experimental_group_name}"')
 
-        __control = control_group_name  # variable names for better visibility
-        __experimental = experimental_group_name
+        c, e = control_group_name, experimental_group_name
         new_settings = copy(self.settings)
-        new_settings.outdir = f'{self.settings.outdir}/{__control}__vs__{__experimental}'
-        new_settings.workdir = f'{self.settings.workdir}/{__control}__vs__{__experimental}'
+        new_settings.outdir = f'{self.settings.outdir}/{c}__vs__{e}'
+        new_settings.workdir = f'{self.settings.workdir}/{c}__vs__{e}'
         for d in [new_settings.workdir, new_settings.outdir]:
             os.makedirs(d, exist_ok=True)
 
@@ -175,8 +186,8 @@ class RNASeqAnalysis(Processor):
             count_df=self.count_df,
             sample_info_df=self.sample_info_df,
             sample_group_column=self.sample_group_column,
-            control_group_name=__control,
-            experimental_group_name=__experimental,
+            control_group_name=c,
+            experimental_group_name=e,
             gene_info_df=self.gene_info_df,
             gene_name_column=self.gene_name_column,
             gene_description_column=self.gene_description_column,
@@ -188,8 +199,8 @@ class RNASeqAnalysis(Processor):
         ClusterProfiler(new_settings).main(
             statistics_df=self.deseq2_statistics_df,
             organism=self.organism,
-            control_group_name=__control,
-            experimental_group_name=__experimental,
+            control_group_name=c,
+            experimental_group_name=e,
             gene_name_column=self.gene_name_column,
             gene_q_threshold=self.gene_q_threshold,
             pathway_p_threshold=self.pathway_p_threshold,
@@ -203,24 +214,27 @@ class RNASeqAnalysis(Processor):
                 sample_info_df=self.sample_info_df,
                 gene_name_column=self.gene_name_column,
                 sample_group_column=self.sample_group_column,
-                control_group_name=__control,
-                experimental_group_name=__experimental,
+                control_group_name=c,
+                experimental_group_name=e,
                 gene_sets_gmt=self.gene_sets_gmt,
                 gene_name_keywords=self.gsea_gene_name_keywords,
                 gene_set_name_keywords=self.gsea_gene_set_name_keywords)
 
-    def heatmap_and_pca(self):
+    def heatmap_and_pca_for_deseq2(self):
+        if self.deseq2_normalized_count_df is None:
+            return
+
         Heatmap(self.settings).main(
-            tpm_df=self.tpm_df,
-            deseq2_normalized_count_df=self.deseq2_normalized_count_df,
-            heatmap_read_fraction=self.heatmap_read_fraction)
+            feature_by_sample_df=self.deseq2_normalized_count_df,
+            heatmap_read_fraction=self.heatmap_read_fraction,
+            fname='heatmap-deseq2')
 
         PCA(self.settings).main(
-            tpm_df=self.tpm_df,
-            deseq2_normalized_count_df=self.deseq2_normalized_count_df,
+            feature_by_sample_df=self.deseq2_normalized_count_df,
             sample_info_df=self.sample_info_df,
             sample_group_column=self.sample_group_column,
-            colors=self.colors)
+            colors=self.colors,
+            fname='pca-deseq2')
 
 
 class SubsetSamples(Processor):
