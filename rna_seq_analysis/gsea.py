@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from os.path import abspath, basename
 from typing import List, Any, Optional
+from .tools import get_dirs
 from .template import Processor
 
 
@@ -51,7 +52,11 @@ class GSEA(Processor):
         self.build_expression_txt()
         self.build_groups_cls()
         self.filter_gene_sets()
+        if self.gene_sets_gmt_is_empty():
+            self.logger.info(f'The gene sets file "{self.gene_sets_gmt}" is empty. Skip running GSEA.')
+            return
         self.run_gsea()
+        self.move_output_files()
 
     def build_expression_txt(self):
         self.expression_txt = BuildExpressionTxt(self.settings).main(
@@ -73,12 +78,11 @@ class GSEA(Processor):
             gene_name_keywords=self.gene_name_keywords,
             gene_set_name_keywords=self.gene_set_name_keywords)
 
-    def run_gsea(self):
+    def gene_sets_gmt_is_empty(self) -> bool:
         with open(self.gene_sets_gmt) as f:
-            if f.read().strip() == '':
-                self.logger.info(f'"{self.gene_sets_gmt}" is empty. Skip running GSEA.')
-                return
+            return f.read().strip() == ''
 
+    def run_gsea(self):
         RunGSEA(self.settings).main(
             expression_txt=self.expression_txt,
             groups_cls=self.groups_cls,
@@ -86,6 +90,13 @@ class GSEA(Processor):
             control_group_name=self.control_group_name,
             experimental_group_name=self.experimental_group_name,
             out_dirname=GSEA_OUTDIR_NAME)
+    
+    def move_output_files(self):
+        dirs = get_dirs(source=f'{self.outdir}/{GSEA_OUTDIR_NAME}', startswith='gsea', isfullpath=True)
+        assert len(dirs) == 1, f'Expected 1 output directory of gsea, but got {len(dirs)}'
+        output_dir = dirs[0]
+        self.call(f'mv {output_dir}/* {self.outdir}/{GSEA_OUTDIR_NAME}/')
+        self.call(f'rm -r {output_dir}')
 
 
 class BuildExpressionTxt(Processor):

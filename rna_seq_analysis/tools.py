@@ -33,3 +33,23 @@ def get_files(
     if ret:
         ret.sort()  # make the order consistent across OS platforms
     return ret
+
+
+def get_dirs(
+        source: str = '.',
+        startswith: str = '',
+        endswith: str = '',
+        isfullpath: bool = False) -> List[str]:
+
+    ret = []
+    s, e = startswith, endswith
+    for path, dirs, files in os.walk(source):
+        if path == source:
+            ret = [d for d in dirs if (d.startswith(s) and d.endswith(e))]
+
+    if isfullpath:
+        ret = [join(source, d) for d in ret]
+
+    if ret:
+        ret.sort()  # make the order consistent across OS platforms
+    return ret
