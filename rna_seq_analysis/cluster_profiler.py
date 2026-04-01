@@ -70,6 +70,9 @@ class ClusterProfiler(Processor):
 
         self.enrichment_name_to_result = {}
         for group_name in self.group_name_to_entrez_ids.keys():
+            if len(self.group_name_to_entrez_ids[group_name]) == 0:
+                self.logger.info(f'No significantly upregulated genes found for the group "{group_name}" with q-value ≤ {self.gene_q_threshold}. Skipping GO and KEGG analysis.')
+                continue
             self.go_enrichment(group_name)
             self.kegg_enrichment(group_name)
 
@@ -81,7 +84,7 @@ class ClusterProfiler(Processor):
             )
 
     def set_group_name_to_entrez_ids(self):
-        significant = self.statistics_df['padj'] < self.gene_q_threshold
+        significant = self.statistics_df['padj'] <= self.gene_q_threshold
         has_gene_symbol = self.statistics_df[self.gene_name_column].notna()
         upregulated = self.statistics_df['log2FoldChange'] >= 0
         downregulated = ~upregulated
