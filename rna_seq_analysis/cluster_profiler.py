@@ -70,7 +70,7 @@ class ClusterProfiler(Processor):
 
         self.enrichment_name_to_result = {}
         for group_name in self.group_name_to_entrez_ids.keys():
-            # self.go_enrichment(group_name)
+            self.go_enrichment(group_name)
             self.kegg_enrichment(group_name)
 
         for name, result in self.enrichment_name_to_result.items():
