@@ -291,8 +291,8 @@ def volcano_plot(
         # small vertical offsets to reduce collisions
         v_offsets = np.linspace(1, 10, num=max(3, len(genes_to_label))) * GENE_LABEL_VERTICAL_OFFSET_SCALE
         i = 0
-        gset = set(genes_to_label)
-        subdf = df[df[gene_name_column].isin(gset)]
+        gset = set([g.lower() for g in genes_to_label])
+        subdf = df[df[gene_name_column].str.lower().isin(gset)]
 
         for _, r in subdf.iterrows():
             gx, gy, name = float(r[fold_change_column]), float(r['neglog10p']), str(r[gene_name_column])

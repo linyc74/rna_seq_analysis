@@ -27,6 +27,7 @@ class TestDESeq2(TestCase):
                 'BOP1',
                 'DRAIC',
                 'EIF2B2',
+                'C10ORF95',  # should be matched to "C10orf95" with lower case
             ],
             gene_p_threshold=0.05,
             gene_q_threshold=0.000000001,
