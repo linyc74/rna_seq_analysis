@@ -3,6 +3,7 @@ import pandas as pd
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
+from rpy2.rinterface_lib.sexp import NULLType
 from typing import List, Dict
 from .template import Processor
 
@@ -116,17 +117,22 @@ class ClusterProfiler(Processor):
             'MF': 'GO Molecular Function',
             'CC': 'GO Cellular Component',
         }
-        for name in ['BP', 'MF', 'CC']:
+        for ontology in ['BP', 'MF', 'CC']:
             result = r_cluster_profiler.enrichGO(
                 gene          = gene_vector,
                 OrgDb         = ORGANISM_TO_DB[self.organism],
                 keyType       = 'ENTREZID',
-                ont           = name,
+                ont           = ontology,
                 pAdjustMethod = 'BH',
                 pvalueCutoff  = self.pathway_p_threshold,
                 qvalueCutoff  = self.pathway_q_threshold,
             )
-            enrichment_name = f'{group_name} - {shot_to_long[name]}'
+            enrichment_name = f'{group_name} - {shot_to_long[ontology]}'
+            
+            if result is None or isinstance(result, NULLType):
+                self.logger.info(f'GO enrichment returned NULL for "{enrichment_name}"')
+                continue
+            
             df = pandas2ri.rpy2py(result.slots['result'])
             df.to_csv(f'{self.outdir}/{self.DSTDIR_NAME}/{enrichment_name}.csv', index=True)
             self.enrichment_name_to_result[enrichment_name] = result
@@ -141,6 +147,11 @@ class ClusterProfiler(Processor):
             pvalueCutoff  = self.pathway_p_threshold,
             qvalueCutoff  = self.pathway_q_threshold,
         )
+
+        if result is None or isinstance(result, NULLType):
+            self.logger.info(f'KEGG enrichment returned NULL for "{group_name}"')
+            return
+
         df = pandas2ri.rpy2py(result.slots['result'])
         enrichment_name = f'{group_name} - KEGG'
         df.to_csv(f'{self.outdir}/{self.DSTDIR_NAME}/{enrichment_name}.csv', index=True)

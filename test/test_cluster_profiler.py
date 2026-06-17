@@ -36,3 +36,16 @@ class TestClusterProfiler(TestCase):
             pathway_q_threshold=1.0,
             show_n_pathways=20,
         )
+
+    def test_no_enrichment_result(self):
+        ClusterProfiler(self.settings).main(
+            statistics_df=pd.read_csv(f'{self.indir}/no_enrichment_result_statistics_df.csv', index_col=0),
+            organism='mouse',
+            control_group_name='Control',
+            experimental_group_name='Experimental',
+            gene_name_column='gene_name',
+            gene_q_threshold=0.1,
+            pathway_p_threshold=1.0,
+            pathway_q_threshold=1.0,
+            show_n_pathways=20,
+        )
