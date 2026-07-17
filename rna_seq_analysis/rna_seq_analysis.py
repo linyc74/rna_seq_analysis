@@ -35,6 +35,7 @@ class RNASeqAnalysis(Processor):
     gsea_input: str
     gsea_gene_name_keywords: Optional[List[str]]
     gsea_gene_set_name_keywords: Optional[List[str]]
+    gsea_top_n_plots: int
     gene_p_threshold: float
     gene_q_threshold: float
     pathway_p_threshold: float
@@ -72,6 +73,7 @@ class RNASeqAnalysis(Processor):
             gsea_input: str,
             gsea_gene_name_keywords: Optional[List[str]],
             gsea_gene_set_name_keywords: Optional[List[str]],
+            gsea_top_n_plots: int,
             gene_p_threshold: float,
             gene_q_threshold: float,
             pathway_p_threshold: float,
@@ -98,6 +100,7 @@ class RNASeqAnalysis(Processor):
         self.gsea_input = gsea_input
         self.gsea_gene_name_keywords = gsea_gene_name_keywords
         self.gsea_gene_set_name_keywords = gsea_gene_set_name_keywords
+        self.gsea_top_n_plots = gsea_top_n_plots
         self.gene_p_threshold = gene_p_threshold
         self.gene_q_threshold = gene_q_threshold
         self.pathway_p_threshold = pathway_p_threshold
@@ -218,7 +221,8 @@ class RNASeqAnalysis(Processor):
                 experimental_group_name=e,
                 gene_sets_gmt=self.gene_sets_gmt,
                 gene_name_keywords=self.gsea_gene_name_keywords,
-                gene_set_name_keywords=self.gsea_gene_set_name_keywords)
+                gene_set_name_keywords=self.gsea_gene_set_name_keywords,
+                gsea_top_n_plots=self.gsea_top_n_plots)
 
     def heatmap_and_pca_for_deseq2(self):
         if self.deseq2_normalized_count_df is None:

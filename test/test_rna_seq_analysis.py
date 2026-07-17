@@ -8,8 +8,8 @@ class TestRNASeqAnalysis(TestCase):
     def setUp(self):
         self.set_up(py_path=__file__)
 
-    # def tearDown(self):
-    #     self.tear_down()
+    def tearDown(self):
+        self.tear_down()
 
     def test_main(self):
         RNASeqAnalysis(self.settings).main(
@@ -36,6 +36,7 @@ class TestRNASeqAnalysis(TestCase):
             gsea_input='deseq2',
             gsea_gene_name_keywords=None,
             gsea_gene_set_name_keywords=None,
+            gsea_top_n_plots=40,
             gene_p_threshold=0.05,
             gene_q_threshold=0.5,
             pathway_p_threshold=0.05,

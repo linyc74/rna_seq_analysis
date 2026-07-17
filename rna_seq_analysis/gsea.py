@@ -21,6 +21,7 @@ class GSEA(Processor):
     gene_sets_gmt: str
     gene_name_keywords: Optional[List[str]]
     gene_set_name_keywords: Optional[List[str]]
+    gsea_top_n_plots: int
 
     expression_txt: str
     groups_cls: str
@@ -36,7 +37,8 @@ class GSEA(Processor):
             experimental_group_name: str,
             gene_sets_gmt: str,
             gene_name_keywords: Optional[List[str]],
-            gene_set_name_keywords: Optional[List[str]]):
+            gene_set_name_keywords: Optional[List[str]],
+            gsea_top_n_plots: int):
 
         self.count_df = count_df
         self.gene_info_df = gene_info_df
@@ -48,7 +50,8 @@ class GSEA(Processor):
         self.gene_sets_gmt = gene_sets_gmt
         self.gene_name_keywords = gene_name_keywords
         self.gene_set_name_keywords = gene_set_name_keywords
-
+        self.gsea_top_n_plots = gsea_top_n_plots
+        
         self.build_expression_txt()
         self.build_groups_cls()
         self.filter_gene_sets()
@@ -89,7 +92,7 @@ class GSEA(Processor):
             gene_sets_gmt=self.gene_sets_gmt,
             control_group_name=self.control_group_name,
             experimental_group_name=self.experimental_group_name,
-            out_dirname=GSEA_OUTDIR_NAME)
+            gsea_top_n_plots=self.gsea_top_n_plots)
     
     def move_output_files(self):
         dirs = get_dirs(source=f'{self.outdir}/{GSEA_OUTDIR_NAME}', startswith='gsea', isfullpath=True)
@@ -296,7 +299,6 @@ class RunGSEA(Processor):
     MAKE_DETAILED_GENE_SET_REPORT = 'true'
     MEDIAN_FOR_CLASS_METRICS = 'false'
     NUMBER_OF_MARKERS = 100
-    PLOT_GRAPHS_FOR_THE_TOP_SETS_OF_EACH_PHENOTYPE = 20
     SAVE_RANDOM_RANKED_LISTS = 'false'
     MAX_SIZE_EXCLUDE_LARGER_SETS = 500
     MIN_SIZE_EXCLUDE_SMALLER_SETS = 15
@@ -307,7 +309,7 @@ class RunGSEA(Processor):
     gene_sets_gmt: str
     control_group_name: str
     experimental_group_name: str
-    out_dirname: str
+    gsea_top_n_plots: int
 
     args: List[str]
 
@@ -318,15 +320,15 @@ class RunGSEA(Processor):
             gene_sets_gmt: str,
             control_group_name: str,
             experimental_group_name: str,
-            out_dirname: str):
+            gsea_top_n_plots: int):
 
         self.expression_txt = expression_txt
         self.groups_cls = groups_cls
         self.gene_sets_gmt = gene_sets_gmt
         self.control_group_name = control_group_name
         self.experimental_group_name = experimental_group_name
-        self.out_dirname = out_dirname
-
+        self.gsea_top_n_plots = gsea_top_n_plots
+        
         self.make_all_paths_absolute()
         self.set_args()
         self.run_gsea()
@@ -344,7 +346,7 @@ class RunGSEA(Processor):
             f'-res {self.expression_txt}',
             f'-cls {self.groups_cls}#{self.experimental_group_name}_versus_{self.control_group_name}',
             f'-gmx {self.gene_sets_gmt}',
-            f'-out {self.outdir}/{self.out_dirname}',
+            f'-out {self.outdir}/{GSEA_OUTDIR_NAME}',
             f'-collapse {self.COLLAPSE_REMAP_TO_GENE_SYMBOLS}',
             f'-mode {self.COLLAPSING_MODE_FOR_PROBE_SETS_GREATER_OR_EQUAL_THAN_1_GENE}',
             f'-norm {self.NORMALIZATION_MODE}',
@@ -363,7 +365,7 @@ class RunGSEA(Processor):
             f'-make_sets {self.MAKE_DETAILED_GENE_SET_REPORT}',
             f'-median {self.MEDIAN_FOR_CLASS_METRICS}',
             f'-num {self.NUMBER_OF_MARKERS}',
-            f'-plot_top_x {self.PLOT_GRAPHS_FOR_THE_TOP_SETS_OF_EACH_PHENOTYPE}',
+            f'-plot_top_x {self.gsea_top_n_plots}',
             f'-save_rnd_lists {self.SAVE_RANDOM_RANKED_LISTS}',
             f'-set_max {self.MAX_SIZE_EXCLUDE_LARGER_SETS}',
             f'-set_min {self.MIN_SIZE_EXCLUDE_SMALLER_SETS}',

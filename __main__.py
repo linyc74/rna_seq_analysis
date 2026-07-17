@@ -4,7 +4,7 @@ import rna_seq_analysis
 warnings.filterwarnings('ignore')
 
 
-__VERSION__ = '1.2.3'
+__VERSION__ = '1.3.0-beta'
 
 
 PROG = 'python rna_seq_analysis'
@@ -159,6 +159,15 @@ OPTIONAL = [
             'required': False,
             'default': 'None',
             'help': 'comma-separated gene-set-name keywords for gene-set pre-filtering before GSEA (default: %(default)s)',
+        }
+    },
+    {
+        'keys': ['--gsea-top-n-plots'],
+        'properties': {
+            'type': int,
+            'required': False,
+            'default': 20,
+            'help': 'number of top gene sets to plot in the GSEA report (default: %(default)s)',
         }
     },
     {
@@ -330,6 +339,7 @@ class EntryPoint:
             gsea_input=args.gsea_input,
             gsea_gene_name_keywords=args.gsea_gene_name_keywords,
             gsea_gene_set_name_keywords=args.gsea_gene_set_name_keywords,
+            gsea_top_n_plots=args.gsea_top_n_plots,
             gene_p_threshold=args.gene_p_threshold,
             gene_q_threshold=args.gene_q_threshold,
             pathway_p_threshold=args.pathway_p_threshold,
