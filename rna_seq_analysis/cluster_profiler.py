@@ -4,7 +4,7 @@ import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
 from rpy2.rinterface_lib.sexp import NULLType
-from typing import List, Dict
+from typing import List, Dict, Optional
 from .template import Processor
 
 
@@ -38,6 +38,7 @@ class ClusterProfiler(Processor):
     gene_q_threshold: float
     pathway_p_threshold: float
     pathway_q_threshold: float
+    enrichment_pathway_keywords: Optional[List[str]]
     show_n_pathways: int
 
     group_name_to_entrez_ids: Dict[str, List[str]]
@@ -53,6 +54,7 @@ class ClusterProfiler(Processor):
             gene_q_threshold: float,
             pathway_p_threshold: float,
             pathway_q_threshold: float,
+            enrichment_pathway_keywords: Optional[List[str]],
             show_n_pathways: int):
 
         self.statistics_df = statistics_df
@@ -63,6 +65,7 @@ class ClusterProfiler(Processor):
         self.gene_q_threshold = gene_q_threshold
         self.pathway_p_threshold = pathway_p_threshold
         self.pathway_q_threshold = pathway_q_threshold
+        self.enrichment_pathway_keywords = enrichment_pathway_keywords
         self.show_n_pathways = show_n_pathways
         
         os.makedirs(f'{self.outdir}/{self.DSTDIR_NAME}', exist_ok=True)

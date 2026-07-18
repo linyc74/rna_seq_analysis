@@ -41,6 +41,7 @@ class RNASeqAnalysis(Processor):
     pathway_p_threshold: float
     pathway_q_threshold: float
     organism: str
+    enrichment_pathway_keywords: Optional[List[str]]
     show_n_pathways: int
     colormap: str
     invert_colors: bool
@@ -79,6 +80,7 @@ class RNASeqAnalysis(Processor):
             pathway_p_threshold: float,
             pathway_q_threshold: float,
             organism: str,
+            enrichment_pathway_keywords: Optional[List[str]],
             show_n_pathways: int,
             colormap: str,
             invert_colors: bool):
@@ -106,6 +108,7 @@ class RNASeqAnalysis(Processor):
         self.pathway_p_threshold = pathway_p_threshold
         self.pathway_q_threshold = pathway_q_threshold
         self.organism = organism
+        self.enrichment_pathway_keywords = enrichment_pathway_keywords
         self.show_n_pathways = show_n_pathways
         self.colormap = colormap
         self.invert_colors = invert_colors
@@ -208,6 +211,7 @@ class RNASeqAnalysis(Processor):
             gene_q_threshold=self.gene_q_threshold,
             pathway_p_threshold=self.pathway_p_threshold,
             pathway_q_threshold=self.pathway_q_threshold,
+            enrichment_pathway_keywords=self.enrichment_pathway_keywords,
             show_n_pathways=self.show_n_pathways)
         
         if self.gene_sets_gmt is not None:

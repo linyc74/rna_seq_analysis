@@ -217,6 +217,15 @@ OPTIONAL = [
         }
     },
     {
+        'keys': ['--enrichment-pathway-keywords'],
+        'properties': {
+            'type': str,
+            'required': False,
+            'default': 'None',
+            'help': 'comma-separated keywords for pathway filtering after enrichment analysis (default: %(default)s)',
+        }
+    }
+    {
         'keys': ['--show-n-pathways'],
         'properties': {
             'type': int,
@@ -345,6 +354,7 @@ class EntryPoint:
             pathway_p_threshold=args.pathway_p_threshold,
             pathway_q_threshold=args.pathway_q_threshold,
             organism=args.organism,
+            enrichment_pathway_keywords=args.enrichment_pathway_keywords,
             show_n_pathways=args.show_n_pathways,
             colormap=args.colormap,
             invert_colors=args.invert_colors,

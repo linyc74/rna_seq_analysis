@@ -28,6 +28,7 @@ def main(
         pathway_p_threshold: float,
         pathway_q_threshold: float,
         organism: str,
+        enrichment_pathway_keywords: str,
         show_n_pathways: int,
         colormap: str,
         invert_colors: bool,
@@ -71,6 +72,7 @@ def main(
         pathway_p_threshold=pathway_p_threshold,
         pathway_q_threshold=pathway_q_threshold,
         organism=organism,
+        enrichment_pathway_keywords=None if enrichment_pathway_keywords.lower() == 'none' else enrichment_pathway_keywords.split(','),
         show_n_pathways=show_n_pathways,
         colormap=colormap,
         invert_colors=invert_colors
