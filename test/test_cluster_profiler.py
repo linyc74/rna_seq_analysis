@@ -21,6 +21,7 @@ class TestClusterProfiler(TestCase):
             gene_q_threshold=0.1,
             pathway_p_threshold=1.0,
             pathway_q_threshold=1.0,
+            enrichment_pathway_keywords=None,
             show_n_pathways=20,
         )
 
@@ -34,6 +35,7 @@ class TestClusterProfiler(TestCase):
             gene_q_threshold=1e-100,
             pathway_p_threshold=1.0,
             pathway_q_threshold=1.0,
+            enrichment_pathway_keywords=None,
             show_n_pathways=20,
         )
 
@@ -47,5 +49,6 @@ class TestClusterProfiler(TestCase):
             gene_q_threshold=0.1,
             pathway_p_threshold=1.0,
             pathway_q_threshold=1.0,
+            enrichment_pathway_keywords=None,
             show_n_pathways=20,
         )

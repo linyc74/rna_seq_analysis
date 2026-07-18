@@ -38,7 +38,7 @@ class GSEA(Processor):
             gene_sets_gmt: str,
             gene_name_keywords: Optional[List[str]],
             gene_set_name_keywords: Optional[List[str]],
-            gsea_top_n_plots: int):
+            top_n_plots: int):
 
         self.count_df = count_df
         self.gene_info_df = gene_info_df
@@ -50,7 +50,7 @@ class GSEA(Processor):
         self.gene_sets_gmt = gene_sets_gmt
         self.gene_name_keywords = gene_name_keywords
         self.gene_set_name_keywords = gene_set_name_keywords
-        self.gsea_top_n_plots = gsea_top_n_plots
+        self.top_n_plots = top_n_plots
         
         self.build_expression_txt()
         self.build_groups_cls()
@@ -92,7 +92,7 @@ class GSEA(Processor):
             gene_sets_gmt=self.gene_sets_gmt,
             control_group_name=self.control_group_name,
             experimental_group_name=self.experimental_group_name,
-            gsea_top_n_plots=self.gsea_top_n_plots)
+            top_n_plots=self.top_n_plots)
     
     def move_output_files(self):
         dirs = get_dirs(source=f'{self.outdir}/{GSEA_OUTDIR_NAME}', startswith='gsea', isfullpath=True)
@@ -309,7 +309,7 @@ class RunGSEA(Processor):
     gene_sets_gmt: str
     control_group_name: str
     experimental_group_name: str
-    gsea_top_n_plots: int
+    top_n_plots: int
 
     args: List[str]
 
@@ -320,14 +320,14 @@ class RunGSEA(Processor):
             gene_sets_gmt: str,
             control_group_name: str,
             experimental_group_name: str,
-            gsea_top_n_plots: int):
+            top_n_plots: int):
 
         self.expression_txt = expression_txt
         self.groups_cls = groups_cls
         self.gene_sets_gmt = gene_sets_gmt
         self.control_group_name = control_group_name
         self.experimental_group_name = experimental_group_name
-        self.gsea_top_n_plots = gsea_top_n_plots
+        self.top_n_plots = top_n_plots
         
         self.make_all_paths_absolute()
         self.set_args()
@@ -365,7 +365,7 @@ class RunGSEA(Processor):
             f'-make_sets {self.MAKE_DETAILED_GENE_SET_REPORT}',
             f'-median {self.MEDIAN_FOR_CLASS_METRICS}',
             f'-num {self.NUMBER_OF_MARKERS}',
-            f'-plot_top_x {self.gsea_top_n_plots}',
+            f'-plot_top_x {self.top_n_plots}',
             f'-save_rnd_lists {self.SAVE_RANDOM_RANKED_LISTS}',
             f'-set_max {self.MAX_SIZE_EXCLUDE_LARGER_SETS}',
             f'-set_min {self.MIN_SIZE_EXCLUDE_SMALLER_SETS}',

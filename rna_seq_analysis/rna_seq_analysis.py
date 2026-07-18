@@ -226,7 +226,7 @@ class RNASeqAnalysis(Processor):
                 gene_sets_gmt=self.gene_sets_gmt,
                 gene_name_keywords=self.gsea_gene_name_keywords,
                 gene_set_name_keywords=self.gsea_gene_set_name_keywords,
-                gsea_top_n_plots=self.gsea_top_n_plots)
+                top_n_plots=self.gsea_top_n_plots)
 
     def heatmap_and_pca_for_deseq2(self):
         if self.deseq2_normalized_count_df is None:

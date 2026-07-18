@@ -29,7 +29,7 @@ class TestGSEA(TestCase):
             gene_sets_gmt=gene_sets_gmt,
             gene_name_keywords=None,
             gene_set_name_keywords=None,
-            gsea_top_n_plots=40,
+            top_n_plots=40,
         )
 
     def test_with_filtering_gene_sets(self):
@@ -50,7 +50,7 @@ class TestGSEA(TestCase):
             gene_sets_gmt=gene_sets_gmt,
             gene_name_keywords=['cdkn2a'],
             gene_set_name_keywords=['NFKB'],
-            gsea_top_n_plots=40,
+            top_n_plots=40,
         )
 
     def test_no_gene_set_passed_filter(self):
@@ -71,7 +71,7 @@ class TestGSEA(TestCase):
             gene_sets_gmt=gene_sets_gmt,
             gene_name_keywords=['XXXXX'],
             gene_set_name_keywords=None,
-            gsea_top_n_plots=40,
+            top_n_plots=40,
         )
 
 
