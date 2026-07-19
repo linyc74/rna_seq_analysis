@@ -73,19 +73,18 @@ class ClusterProfiler(Processor):
         self.set_group_name_to_entrez_ids()
 
         self.enrichment_name_to_result = {}
-        for group_name in self.group_name_to_entrez_ids.keys():
-            if len(self.group_name_to_entrez_ids[group_name]) == 0:
+
+        for group_name, entrez_ids in self.group_name_to_entrez_ids.items():
+            if len(entrez_ids) == 0:
                 self.logger.info(f'No significantly upregulated genes found for the group "{group_name}" with q-value ≤ {self.gene_q_threshold}. Skipping GO and KEGG analysis.')
                 continue
-            self.go_enrichment(group_name)
-            self.kegg_enrichment(group_name)
+            self.go_enrichment(group_name=group_name)
+            self.kegg_enrichment(group_name=group_name)
 
-        for name, result in self.enrichment_name_to_result.items():
-            self.bubble_plot(
-                enrich_result=result,
-                title=name,
-                png=f'{self.outdir}/{self.DSTDIR_NAME}/{name}.png'
-            )
+        for name in self.enrichment_name_to_result.keys():
+            self.filter_pathways_by_keywords(enrichment_name=name)
+            self.save_csv(enrichment_name=name)
+            self.bubble_plot(enrichment_name=name)
 
     def set_group_name_to_entrez_ids(self):
         significant = self.statistics_df['padj'] <= self.gene_q_threshold
@@ -136,8 +135,6 @@ class ClusterProfiler(Processor):
                 self.logger.info(f'GO enrichment returned NULL for "{enrichment_name}"')
                 continue
             
-            df = pandas2ri.rpy2py(result.slots['result'])
-            df.to_csv(f'{self.outdir}/{self.DSTDIR_NAME}/{enrichment_name}.csv', index=True)
             self.enrichment_name_to_result[enrichment_name] = result
 
     def kegg_enrichment(self, group_name: str):
@@ -155,28 +152,53 @@ class ClusterProfiler(Processor):
             self.logger.info(f'KEGG enrichment returned NULL for "{group_name}"')
             return
 
-        df = pandas2ri.rpy2py(result.slots['result'])
         enrichment_name = f'{group_name} - KEGG'
-        df.to_csv(f'{self.outdir}/{self.DSTDIR_NAME}/{enrichment_name}.csv', index=True)
         self.enrichment_name_to_result[enrichment_name] = result
 
-    def bubble_plot(self, enrich_result: ro.methods.RS4, title: str, png: str):
+    def filter_pathways_by_keywords(self, enrichment_name: str):
+        if self.enrichment_pathway_keywords is None:
+            return
+
+        result = self.enrichment_name_to_result[enrichment_name]
+        df = pandas2ri.rpy2py(result.slots['result'])
+
+        before = len(df)
+        df = df[df['Description'].apply(self.__contain_any_keyword)].copy()
+        after = len(df)
+
+        self.logger.info(f'Using keywords to filter "{enrichment_name}" pathways: {before} -> {after}')
+
+        self.enrichment_name_to_result[enrichment_name].slots['result'] = pandas_df_to_r_df(df)
+
+    def __contain_any_keyword(self, description: str) -> bool:
+        for k in self.enrichment_pathway_keywords:
+            if k.lower() in description.lower():  # should be case-insensitive
+                return True
+        return False
+
+    def save_csv(self, enrichment_name: str):
+        result = self.enrichment_name_to_result[enrichment_name]
+        df = r_df_to_pandas_df(result.slots['result'])
+        df.to_csv(f'{self.outdir}/{self.DSTDIR_NAME}/{enrichment_name}.csv', index=True)
+
+    def bubble_plot(self, enrichment_name: str):
+        enrich_result = self.enrichment_name_to_result[enrichment_name]
         plot = r_enrichplot.dotplot(
             object       = enrich_result,
             x            = 'GeneRatio',
             color        = 'p.adjust',
             showCategory = self.show_n_pathways,
-            title        = title,
+            title        = enrichment_name,
             orderBy      = 'x',
         )
         n_plotted = get_n_plotted_pathways(enrichplot=plot)
         height = get_height(n_plotted)
         r_ggplot2.ggsave(
-            filename = png,
-            plot    = plot,
-            width   = 18 / 2.54,
-            height  = height,
-            dpi     = 600
+            filename = f'{self.outdir}/{self.DSTDIR_NAME}/{enrichment_name}.png',
+            plot     = plot,
+            width    = 18 / 2.54,
+            height   = height,
+            dpi      = 600
         )
 
 
@@ -190,3 +212,21 @@ def get_n_plotted_pathways(enrichplot: ro.methods.RS4) -> int:
 def get_height(n_plotted: int) -> float:
     padding = 2 / 2.54
     return padding + (n_plotted * 1 / 2.54)
+
+
+def r_df_to_pandas_df(r_df: ro.vectors.DataFrame) -> pd.DataFrame:
+    """
+    Convert an R data.frame to a pandas DataFrame.
+    """
+    return pandas2ri.rpy2py(r_df)
+
+
+def pandas_df_to_r_df(df: pd.DataFrame) -> ro.vectors.DataFrame:
+    """
+    Convert a pandas DataFrame to an R data.frame.
+
+    Uses a local converter context so pandas Series columns are converted
+    correctly under rpy2 >= 3.5.
+    """
+    with (ro.default_converter + pandas2ri.converter).context():
+        return ro.conversion.get_conversion().py2rpy(df)

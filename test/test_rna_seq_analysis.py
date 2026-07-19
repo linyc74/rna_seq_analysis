@@ -42,7 +42,7 @@ class TestRNASeqAnalysis(TestCase):
             pathway_p_threshold=0.05,
             pathway_q_threshold=0.5,
             organism='human',
-            enrichment_pathway_keywords=None,
+            enrichment_pathway_keywords=['signal'],
             show_n_pathways=20,
             colormap='Set1',
             invert_colors=True

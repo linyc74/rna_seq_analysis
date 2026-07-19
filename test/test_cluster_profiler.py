@@ -21,7 +21,7 @@ class TestClusterProfiler(TestCase):
             gene_q_threshold=0.1,
             pathway_p_threshold=1.0,
             pathway_q_threshold=1.0,
-            enrichment_pathway_keywords=None,
+            enrichment_pathway_keywords=['SIGNAL'],  # should be case-insensitive
             show_n_pathways=20,
         )
 
@@ -50,5 +50,19 @@ class TestClusterProfiler(TestCase):
             pathway_p_threshold=1.0,
             pathway_q_threshold=1.0,
             enrichment_pathway_keywords=None,
+            show_n_pathways=20,
+        )
+    
+    def test_no_pathway_after_keyword_filtering(self):
+        ClusterProfiler(self.settings).main(
+            statistics_df=pd.read_csv(f'{self.indir}/statistics_df.csv', index_col=0),
+            organism='human',
+            control_group_name='normal',
+            experimental_group_name='cancer',
+            gene_name_column='gene_name',
+            gene_q_threshold=0.1,
+            pathway_p_threshold=1.0,
+            pathway_q_threshold=1.0,
+            enrichment_pathway_keywords=['NOT_EXISTING'],
             show_n_pathways=20,
         )
