@@ -224,7 +224,7 @@ OPTIONAL = [
             'default': 'None',
             'help': 'comma-separated keywords for pathway filtering after enrichment analysis (default: %(default)s)',
         }
-    }
+    },
     {
         'keys': ['--show-n-pathways'],
         'properties': {
