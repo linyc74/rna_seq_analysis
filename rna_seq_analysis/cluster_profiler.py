@@ -190,13 +190,24 @@ class ClusterProfiler(Processor):
             showCategory = self.show_n_pathways,
             title        = enrichment_name,
             orderBy      = 'x',
+            label_format = 1000,  # max number of characters of the pathway name before it is wrapped, 1000 is basically no wrapping
         )
+
         n_plotted = get_n_plotted_pathways(enrichplot=plot)
-        height = get_height(n_plotted)
+        if len(plotted_pathways) == 0:
+            return  # no need to save the plot
+
+        height = get_height(n_plotted=n_plotted)
+
+        df = r_df_to_pandas_df(enrich_result.slots['result'])
+        plotted_pathways = df['Description'].tolist()[0:n_plotted]
+        longest_pathway_chars = max(len(p) for p in plotted_pathways)
+        width = get_width(longest_pathway_chars=longest_pathway_chars)
+
         r_ggplot2.ggsave(
             filename = f'{self.outdir}/{self.DSTDIR_NAME}/{enrichment_name}.png',
             plot     = plot,
-            width    = 18 / 2.54,
+            width    = width,
             height   = height,
             dpi      = 600
         )
@@ -210,8 +221,16 @@ def get_n_plotted_pathways(enrichplot: ro.methods.RS4) -> int:
 
 
 def get_height(n_plotted: int) -> float:
+    min_height = 7 / 2.54  # to accommodate p value bar and size circle labels
     padding = 2 / 2.54
-    return padding + (n_plotted * 1 / 2.54)
+    calculated = padding + (n_plotted * 1 / 2.54)
+    return float(max(min_height, calculated))
+
+
+def get_width(longest_pathway_chars: int) -> float:
+    base_width = 12 / 2.54
+    char_width = (5.5 / 30) / 2.54
+    return float(base_width + (longest_pathway_chars * char_width))
 
 
 def r_df_to_pandas_df(r_df: ro.vectors.DataFrame) -> pd.DataFrame:

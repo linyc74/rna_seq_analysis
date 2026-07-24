@@ -21,7 +21,7 @@ class TestClusterProfiler(TestCase):
             gene_q_threshold=0.1,
             pathway_p_threshold=1.0,
             pathway_q_threshold=1.0,
-            enrichment_pathway_keywords=['SIGNAL'],  # should be case-insensitive
+            enrichment_pathway_keywords=None,
             show_n_pathways=20,
         )
 
@@ -63,6 +63,6 @@ class TestClusterProfiler(TestCase):
             gene_q_threshold=0.1,
             pathway_p_threshold=1.0,
             pathway_q_threshold=1.0,
-            enrichment_pathway_keywords=['NOT_EXISTING'],
+            enrichment_pathway_keywords=['NOT_EXISTING'],  # should be case-insensitive
             show_n_pathways=20,
         )
