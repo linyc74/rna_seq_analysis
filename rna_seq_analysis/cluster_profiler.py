@@ -194,7 +194,7 @@ class ClusterProfiler(Processor):
         )
 
         n_plotted = get_n_plotted_pathways(enrichplot=plot)
-        if len(plotted_pathways) == 0:
+        if n_plotted == 0:
             return  # no need to save the plot
 
         height = get_height(n_plotted=n_plotted)
